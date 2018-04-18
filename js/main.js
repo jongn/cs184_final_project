@@ -144,13 +144,11 @@ function render() {
 
   //Draw to textureB
   //renderer.render(bufferScene,camera,velocityB,true);
-  advect.compute(renderer, velocityA, velocityB);
+  advect.compute(renderer, velocity.read, velocity.write);
   //Swap textureA and B
-  var t = velocityA;
-  velocityA = velocityB;
-  velocityB = t;
+  velocity.swap();
 
-  externalForce.compute(renderer, velocityA, velocityB);
+  externalForce.compute(renderer, velocity.read, velocity.write);
   //Swap textureA and B
   //var t = velocityA;
   //velocityA = velocityB;
@@ -158,7 +156,7 @@ function render() {
 
 
   //Load to final draw texture
-  draw.compute(renderer, velocityB, drawTexture);
+  draw.compute(renderer, velocity.write, drawTexture);
   //var gl = renderer.getContext();
 
 
@@ -185,8 +183,6 @@ function render() {
   */
   requestAnimationFrame( render );
 
-  var t = velocityA;
-  velocityA = velocityB;
-  velocityB = t
+  velocity.swap();
 }
 render();
