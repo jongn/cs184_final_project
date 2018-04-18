@@ -2,22 +2,17 @@ var scene;
 var camera;
 var renderer;
 
-var bufferScene;
-var bufferScene2;
-var velocityA;
-var velocityB;
-
+//slabs
 var velocity;
 var density;
 
 var drawTexture;
 
-var bufferMaterial;
 var plane;
-var bufferObject;
 var finalMaterial;
 var quad;
 
+//shaders
 var advect;
 var externalForce;
 var draw;
@@ -36,6 +31,8 @@ function scene_setup(){
 
 function buffer_texture_setup(){
 
+    //uncomment for shader compilation debugging?
+    /*
     gl = renderer.getContext();
 
     source = document.getElementById( 'Draw' ).innerHTML;
@@ -48,45 +45,24 @@ function buffer_texture_setup(){
     console.log('Shader compiled successfully: ' + compiled);
     var compilationLog = gl.getShaderInfoLog(shader);
     console.log('Shader compiler log: ' + compilationLog);
+    */
 
 
-
-    //Create buffer scene
+    //create shader programs
 
     advect = new Advect();
     externalForce = new ExternalForce();
     draw = new Draw();
 
-
-    bufferScene = new THREE.Scene();
-    bufferScene2 = new THREE.Scene();
-    //Create 2 buffer textures
-    velocityA = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, type: THREE.FloatType });
-    velocityB = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, type: THREE.FloatType });
-    drawTexture = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, type: THREE.FloatType });
+    // create slabs
 
     velocity = new Slab();
     density = new Slab();
-    /*
-    //Pass textureA to shader
 
-    bufferMaterial = new THREE.ShaderMaterial( {
-        uniforms: {
-         bufferTexture: { type: "t", value: velocityA },
-         res : {type: 'v2',value:new THREE.Vector2(window.innerWidth,window.innerHeight)},//Keeps the resolution
-         smokeSource: {type:"v3",value:new THREE.Vector3(0,0,0)},
-         sourceVelocity: {type:"v2",value:new THREE.Vector2(0,0)},
-         time: {type:"f",value:Math.random()*Math.PI*2+Math.PI}
-        },
-        fragmentShader: document.getElementById( 'advectShader' ).innerHTML
-    } );
+    //drawTexture is what is actually being drawn
 
+    drawTexture = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, type: THREE.FloatType });
 
-    plane = new THREE.PlaneBufferGeometry( window.innerWidth, window.innerHeight );
-    bufferObject = new THREE.Mesh( plane, bufferMaterial );
-    bufferScene.add(bufferObject);
-    */
-    //Draw textureB to screen 
     plane = new THREE.PlaneBufferGeometry( window.innerWidth, window.innerHeight );
     finalMaterial =  new THREE.MeshBasicMaterial({map: drawTexture});
     quad = new THREE.Mesh( plane, finalMaterial );
@@ -130,57 +106,38 @@ document.onmousedown = function(event){
     timeStamp = Date.now();
     lastX = event.clientX;
     lastY = window.innerHeight - event.clientY;
-    //bufferMaterial.uniforms.smokeSource.value.z = 0.1;
-    externalForce.smokeSource.z = 0.1;
+    externalForce.smokeSource.z = 1.0;
 }
 document.onmouseup = function(event){
     mouseDown = false;
-    //bufferMaterial.uniforms.smokeSource.value.z = 0;
     externalForce.smokeSource.z = 0;
 }
 
 //Render everything!
 function render() {
 
-  //Draw to textureB
-  //renderer.render(bufferScene,camera,velocityB,true);
   advect.compute(renderer, velocity.read, velocity.write);
-  //Swap textureA and B
   velocity.swap();
 
   externalForce.compute(renderer, velocity.read, velocity.write);
-  //Swap textureA and B
-  //var t = velocityA;
-  //velocityA = velocityB;
-  //velocityB = t;
 
 
-  //Load to final draw texture
   draw.compute(renderer, velocity.write, drawTexture);
-  //var gl = renderer.getContext();
 
-
-  //advect.quad.material.map = velocityB;
-  //advect.uniforms.bufferTexture.value = velocityA;
-  //advect2.quad.material.map = velocityB;
-  //advect2.uniforms.bufferTexture.value = velocityA;
   
-  //bufferMaterial.uniforms.bufferTexture.value = velocityA;
-
-  //advect2.compute();
-
-  //Update time
-  //bufferMaterial.uniforms.time.value += 0.01;
-
-  //Finally, draw to the screen
-
+  //var gl = renderer.getContext();
   
   renderer.render( scene, camera );
+
+
+  // use for debugging
   /*
   var pixel = new Uint8Array(4);
   gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
   console.log(pixel);
   */
+
+
   requestAnimationFrame( render );
 
   velocity.swap();
