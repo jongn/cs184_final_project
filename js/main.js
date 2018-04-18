@@ -119,9 +119,13 @@ function render() {
   advect.compute(renderer, velocity.read, velocity.read, velocity.write);
   velocity.swap();
 
+  advect.compute(renderer, velocity.read, density.read, density.write);
+  density.swap();
+
+
   externalForce.compute(renderer, velocity.read, velocity.write);
 
-
+  
   draw.compute(renderer, velocity.write, drawTexture);
 
 
