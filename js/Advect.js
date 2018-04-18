@@ -21,10 +21,10 @@ Advect = function() {
     this.scene.add(this.quad);
 }
 
-Advect.prototype.compute = function(renderer, input, output) {
+Advect.prototype.compute = function(renderer, velocityField, advectionField, output) {
     this.uniforms.res.value = this.res;
-    this.uniforms.velocityField.value = input;
-    this.uniforms.advectionField.value = input;
+    this.uniforms.velocityField.value = velocityField;
+    this.uniforms.advectionField.value = advectionField;
     this.uniforms.dissipation.value = 1.0;
     renderer.render(this.scene, this.camera, output, false);
 }

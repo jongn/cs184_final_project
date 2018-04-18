@@ -116,7 +116,7 @@ document.onmouseup = function(event){
 //Render everything!
 function render() {
 
-  advect.compute(renderer, velocity.read, velocity.write);
+  advect.compute(renderer, velocity.read, velocity.read, velocity.write);
   velocity.swap();
 
   externalForce.compute(renderer, velocity.read, velocity.write);
@@ -124,7 +124,7 @@ function render() {
 
   draw.compute(renderer, velocity.write, drawTexture);
 
-  
+
   //var gl = renderer.getContext();
   
   renderer.render( scene, camera );
