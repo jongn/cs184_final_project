@@ -143,6 +143,9 @@ function render() {
   advect.compute(renderer, velocity.read, density.read, density.write);
   density.swap();
 
+  advect.compute(renderer, velocity.read, temperature.read, temperature.write);
+  tempurature.swap();
+
   buoyancy.compute(renderer, velocity.read, temperature.read, density.read, dt, velocity.write);
   velocity.swap();
 
@@ -153,7 +156,7 @@ function render() {
   diverge.swap();
 
   renderer.clearTarget(pressure.read, true, false, false);
-  for (var i = 0; i < 10; i++) {
+  for (var i = 0; i < 30; i++) {
     jacobi.compute(renderer, pressure.read, diverge.read, -1.0, 4.0, pressure.write);
     pressure.swap();
   }
