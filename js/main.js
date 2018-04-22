@@ -6,7 +6,7 @@ var renderer;
 var velocity;
 var density;
 var pressure;
-var temp;
+var temperature;
 var diverge;
 
 var drawTexture;
@@ -69,7 +69,7 @@ function buffer_texture_setup(){
     velocity = new Slab();
     density = new Slab();
     pressure = new Slab();
-    temp = new Slab();
+    temperature = new Slab();
     diverge = new Slab();
 
     //drawTexture is what is actually being drawn
@@ -129,15 +129,20 @@ document.onmouseup = function(event){
 //Render everything!
 function render() {
 
-  advect.compute(renderer, velocity.read, velocity.read, velocity.write);
+  advect.compute(renderer, velocity.read, velocity.read, 1.0, velocity.write);
   velocity.swap();
 
-  advect.compute(renderer, velocity.read, density.read, density.write);
+  advect.compute(renderer, velocity.read, density.read, 0.98, density.write);
   density.swap();
 
+  advect.compute(renderer, velocity.read, temperature.read, 0.98, temperature.write);
+  temperature.swap();
 
   externalForce.compute(renderer, velocity.read, velocity.write);
   velocity.swap();
+
+  externalForce.compute(renderer, density.read, density.write);
+  density.swap();
 
   divergence.compute(renderer, velocity.read, 1.0, 1.0, diverge.write);
   diverge.swap();
@@ -151,8 +156,9 @@ function render() {
   
 
   subtractGradient.compute(renderer, velocity.read, pressure.read, 1.0, 1.0, velocity.write);
+  velocity.swap()
 
-  draw.compute(renderer, velocity.write, drawTexture);
+  draw.compute(renderer, density.read, drawTexture);
 
 
   //var gl = renderer.getContext();
@@ -170,6 +176,5 @@ function render() {
 
   requestAnimationFrame( render );
 
-  velocity.swap();
 }
 render();

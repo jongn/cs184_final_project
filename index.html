@@ -60,15 +60,13 @@
             vec2 pixel = gl_FragCoord.xy / res.xy;
             float dist = distance(smokeSource.xy,gl_FragCoord.xy);
             vec2 smoke = smokeSource.z * max(15.0-dist,0.0) * sourceVelocity / res.xy;
-            //vec2 smoke = vec2(1,1);
-            //vec2 p = gl_FragCoord.xy - texture2D(bufferTexture, pixel).xy;
             gl_FragColor = vec4(texture2D(bufferTexture, pixel).xy + smoke, 0.0, 1.0);
         }
     </script>
     <script id="Draw" type="shader-code">
         precision mediump float;
-        uniform vec2 res;//The width and height of our screen
-        uniform sampler2D bufferTexture;//Our input texture
+        uniform vec2 res;
+        uniform sampler2D bufferTexture;
         uniform vec3 bias;
         uniform vec3 scale;
 
@@ -78,9 +76,9 @@
         }
     </script>
     <script id="Jacobi" type="shader-code">
-        uniform vec2 res;//The width and height of our screen
-        uniform sampler2D x;//Our input texture
-        uniform sampler2D b;//Our input texture
+        uniform vec2 res;
+        uniform sampler2D x;
+        uniform sampler2D b;
         uniform float alpha;
         uniform float beta;
 
@@ -93,8 +91,8 @@
         }
     </script>
     <script id="Divergence" type="shader-code">
-        uniform vec2 res;//The width and height of our screen
-        uniform sampler2D u;//Our input texture
+        uniform vec2 res;
+        uniform sampler2D u;
         uniform float dx;
         uniform float dy;
 
@@ -110,8 +108,8 @@
         }
     </script>
     <script id="SubtractGradient" type="shader-code">
-        uniform vec2 res;//The width and height of our screen
-        uniform sampler2D w;//Our input texture
+        uniform vec2 res;
+        uniform sampler2D w;
         uniform sampler2D p;
         uniform float dx;
         uniform float dy;
