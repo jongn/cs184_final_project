@@ -5,6 +5,9 @@ var renderer;
 //slabs
 var velocity;
 var density;
+var pressure;
+var temp;
+var diverge;
 
 var drawTexture;
 
@@ -14,7 +17,11 @@ var quad;
 
 //shaders
 var advect;
+var buoyancy;
+var divergence;
+var jacobi;
 var externalForce;
+var subtractGradient;
 var draw;
 
 function scene_setup(){
@@ -53,11 +60,17 @@ function buffer_texture_setup(){
     advect = new Advect();
     externalForce = new ExternalForce();
     draw = new Draw();
+    jacobi = new Jacobi();
+    divergence = new Divergence();
+    subtractGradient = new SubtractGradient();
 
     // create slabs
 
     velocity = new Slab();
     density = new Slab();
+    pressure = new Slab();
+    temp = new Slab();
+    diverge = new Slab();
 
     //drawTexture is what is actually being drawn
 
@@ -124,8 +137,21 @@ function render() {
 
 
   externalForce.compute(renderer, velocity.read, velocity.write);
+  velocity.swap();
+
+  divergence.compute(renderer, velocity.read, 1.0, 1.0, diverge.write);
+  diverge.swap();
 
   
+  renderer.clearTarget(pressure.read, true, false, false);
+  for (var i = 0; i < 10; i++) {
+    jacobi.compute(renderer, pressure.read, diverge.read, -1.0, 4.0, pressure.write);
+    pressure.swap();
+  }
+  
+
+  subtractGradient.compute(renderer, velocity.read, pressure.read, 1.0, 1.0, velocity.write);
+
   draw.compute(renderer, velocity.write, drawTexture);
 
 

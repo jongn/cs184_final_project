@@ -77,10 +77,62 @@
             gl_FragColor = vec4(bias + scale * texture2D(bufferTexture, pixel).xyz, 1.0);
         }
     </script>
+    <script id="Jacobi" type="shader-code">
+        uniform vec2 res;//The width and height of our screen
+        uniform sampler2D x;//Our input texture
+        uniform sampler2D b;//Our input texture
+        uniform float alpha;
+        uniform float beta;
+
+        void main() {
+            vec2 istep = vec2(1.0 / res.x, 0.0);
+            vec2 jstep = vec2(0.0, 1.0 / res.y);
+            vec2 ij = gl_FragCoord.xy / res.xy;
+
+            gl_FragColor = vec4( (texture2D(x, ij - istep).x + texture2D(x, ij + istep).x + texture2D(x, ij + jstep).x + texture2D(x, ij - jstep).x + alpha * texture2D(b, ij).x) / beta, 0.0, 0.0, 1.0);
+        }
+    </script>
+    <script id="Divergence" type="shader-code">
+        uniform vec2 res;//The width and height of our screen
+        uniform sampler2D u;//Our input texture
+        uniform float dx;
+        uniform float dy;
+
+        void main() {
+            vec2 istep = vec2(1.0 / res.x, 0.0);
+            vec2 jstep = vec2(0.0, 1.0 / res.y);
+            vec2 ij = gl_FragCoord.xy / res.xy;
+
+            float uterm = (texture2D(u, ij + istep).x - texture2D(u, ij - istep).x) / (2.0 * dx);
+            float vterm = (texture2D(u, ij + jstep).y - texture2D(u, ij - jstep).y) / (2.0 * dy);
+
+            gl_FragColor = vec4(uterm + vterm, 0.0, 0.0, 1.0);
+        }
+    </script>
+    <script id="SubtractGradient" type="shader-code">
+        uniform vec2 res;//The width and height of our screen
+        uniform sampler2D w;//Our input texture
+        uniform sampler2D p;
+        uniform float dx;
+        uniform float dy;
+
+        void main() {
+            vec2 istep = vec2(1.0 / res.x, 0.0);
+            vec2 jstep = vec2(0.0, 1.0 / res.y);
+            vec2 ij = gl_FragCoord.xy / res.xy;
+
+            vec2 gradient = vec2((texture2D(p, ij + istep).x - texture2D(p, ij - istep).x) / (2.0 * dx), (texture2D(p, ij + jstep).x - texture2D(p, ij - jstep).x) / (2.0 * dy));
+
+            gl_FragColor = vec4(texture2D(w, ij).xy - gradient, 0.0, 1.0);
+        }
+    </script>
     <script src="js/Slab.js"></script>
     <script src="js/Advect.js"></script>
     <script src="js/ExternalForce.js"></script>
     <script src="js/Draw.js"></script>
+    <script src="js/Jacobi.js"></script>
+    <script src="js/Divergence.js"></script>
+    <script src="js/SubtractGradient.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>
