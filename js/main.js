@@ -22,6 +22,7 @@ var divergence;
 var jacobi;
 var externalForce;
 var subtractGradient;
+var vorticity;
 var draw;
 
 function scene_setup(){
@@ -59,18 +60,23 @@ function buffer_texture_setup(){
 
     advect = new Advect();
     externalForce = new ExternalForce();
+    buoyancy = new Buoyancy();
     draw = new Draw();
     jacobi = new Jacobi();
     divergence = new Divergence();
     subtractGradient = new SubtractGradient();
+    curl = new Curl();
+    vorticity = new Vorticity();
 
     // create slabs
 
     velocity = new Slab();
     density = new Slab();
+    temperature = new Slab();
     pressure = new Slab();
     temperature = new Slab();
     diverge = new Slab();
+    curlSlab = new Slab();
 
     //drawTexture is what is actually being drawn
 
@@ -130,6 +136,9 @@ document.onmouseup = function(event){
 function render() {
 
   advect.compute(renderer, velocity.read, velocity.read, 1.0, velocity.write);
+  const dt = Math.min((Date.now() - lastTime) / 1000, 0.016)
+
+
   velocity.swap();
 
   advect.compute(renderer, velocity.read, density.read, 0.98, density.write);
@@ -138,28 +147,35 @@ function render() {
   advect.compute(renderer, velocity.read, temperature.read, 0.98, temperature.write);
   temperature.swap();
 
+  buoyancy.compute(renderer, velocity.read, temperature.read, density.read, dt, velocity.write);
+  velocity.swap();
+
   externalForce.compute(renderer, velocity.read, velocity.write);
   velocity.swap();
 
   externalForce.compute(renderer, density.read, density.write);
   density.swap();
 
+  //externalForce.compute(renderer, temperature.read, temperature.write);
+  //temperature.swap();
+
   divergence.compute(renderer, velocity.read, 1.0, 1.0, diverge.write);
   diverge.swap();
 
-  
   renderer.clearTarget(pressure.read, true, false, false);
   for (var i = 0; i < 10; i++) {
     jacobi.compute(renderer, pressure.read, diverge.read, -1.0, 4.0, pressure.write);
     pressure.swap();
   }
-  
 
   subtractGradient.compute(renderer, velocity.read, pressure.read, 1.0, 1.0, velocity.write);
   velocity.swap()
 
-  draw.compute(renderer, density.read, drawTexture);
+  // curl.compute(renderer, velocity.read, velocity.write);
+  // vorticity.compute(renderer, velocity.read, curl.read, dt, velocity.write);
+  // velocity.swap()
 
+  draw.compute(renderer, density.read, drawTexture);
 
   //var gl = renderer.getContext();
   
@@ -177,4 +193,5 @@ function render() {
   requestAnimationFrame( render );
 
 }
+lastTime = Date.now();
 render();
