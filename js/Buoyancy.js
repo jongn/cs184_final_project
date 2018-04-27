@@ -1,6 +1,6 @@
 Buoyancy = function() {
-    var geometry = new THREE.PlaneBufferGeometry( window.innerWidth, window.innerHeight );
-    this.res = new THREE.Vector2(window.innerWidth,window.innerHeight);
+    var geometry = new THREE.PlaneBufferGeometry( 2 * (512 - 2) / 512, 2 * (256 - 2) / 256 );
+    this.res = new THREE.Vector2(512, 256);
     this.uniforms = {
         res : {type: 'v2' },
         velocityField: { type: "t" },
@@ -19,8 +19,8 @@ Buoyancy = function() {
         blending: THREE.NoBlending
     });
     this.quad = new THREE.Mesh(geometry, material);
-    this.camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, 1, 1000 );
-    this.camera.position.z = 2;
+    this.camera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0, 1 );
+    //this.camera.position.z = 2;
     this.scene = new THREE.Scene();
     this.scene.add(this.quad);
 }

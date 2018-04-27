@@ -29,9 +29,9 @@ function scene_setup(){
     scene = new THREE.Scene();
     var width = window.innerWidth;
     var height = window.innerHeight;
-    camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 1000 );
-    camera.position.z = 2;
+    camera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0, 1 );
     renderer = new THREE.WebGLRenderer();
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
 }
@@ -80,9 +80,9 @@ function buffer_texture_setup(){
 
     //drawTexture is what is actually being drawn
 
-    drawTexture = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, type: THREE.FloatType });
+    drawTexture = new THREE.WebGLRenderTarget( 512, 256, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, type: THREE.FloatType });
 
-    plane = new THREE.PlaneBufferGeometry( window.innerWidth, window.innerHeight );
+    plane = new THREE.PlaneBufferGeometry( 2, 2 );
     finalMaterial =  new THREE.MeshBasicMaterial({map: drawTexture});
     quad = new THREE.Mesh( plane, finalMaterial );
     scene.add(quad);
@@ -104,8 +104,8 @@ function UpdateMousePosition(X,Y){
     var deltaTime = currentTime - timeStamp;
 
 
-    externalForce.smokeSource.x = X;
-    externalForce.smokeSource.y = Y;
+    externalForce.smokeSource.x = X * 512 / window.innerWidth;
+    externalForce.smokeSource.y = Y * 256 / window.innerHeight;
 
     externalForce.sourceVelocity.x = Math.round((X-lastX) / deltaTime * 100);
     externalForce.sourceVelocity.y = Math.round((Y-lastY) / deltaTime * 100);
