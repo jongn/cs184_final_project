@@ -147,6 +147,7 @@ function render() {
   advect.compute(renderer, velocity.read, temperature.read, 0.98, temperature.write);
   temperature.swap();
 
+
   buoyancy.compute(renderer, velocity.read, temperature.read, density.read, dt, velocity.write);
   velocity.swap();
 
