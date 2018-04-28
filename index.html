@@ -131,7 +131,6 @@
         uniform sampler2D temperatureField;
         uniform sampler2D densityField;
         uniform float ambientTemperature;
-        uniform float dt;
         uniform float sigma;
         uniform float kappa;
 
@@ -142,10 +141,10 @@
 
             gl_FragColor = v;
 
-            if (t > ambientTemperature) {
+            //if (t > ambientTemperature) {
                 float d = texture2D(densityField, pixel).x;
-                gl_FragColor += vec4(0.0, dt * (t - ambientTemperature) * sigma - d * kappa, 0.0, 1.0);
-            }
+                gl_FragColor += vec4(0.0, sigma * (t - ambientTemperature) - d * kappa, 0.0, 1.0);
+            //}
         }
     </script>
     <script id="Curl" type="shader-code">

@@ -45,7 +45,7 @@ var tempSettings = {
     Ambient: -0.1
 };
 var tempFolder = gui.addFolder("Temperature");
-    tempFolder.add(tempSettings, "Ambient", -1, 1, 0.1);
+    tempFolder.add(tempSettings, "Ambient", -0.5, 0.5, 0.05);
 
 function scene_setup(){
     scene = new THREE.Scene();
@@ -158,8 +158,6 @@ document.onmouseup = function(event){
 function render() {
 
   advect.compute(renderer, velocity.read, velocity.read, 1.0, velocity.write);
-  const dt = Math.min((Date.now() - lastTime) / 1000, 0.016)
-
   velocity.swap();
 
   advect.compute(renderer, velocity.read, density.read, 0.98, density.write);
@@ -168,8 +166,8 @@ function render() {
   advect.compute(renderer, velocity.read, temperature.read, 0.98, temperature.write);
   temperature.swap();
 
-
-  buoyancy.compute(renderer, velocity.read, temperature.read, density.read, tempSettings.ambientTemp, dt, velocity.write);
+  console.log(tempSettings.Ambient)
+  buoyancy.compute(renderer, velocity.read, temperature.read, density.read, tempSettings.Ambient, velocity.write);
   velocity.swap();
 
   externalForce.compute(renderer, velocity.read, velocity.write);
@@ -225,5 +223,4 @@ function render() {
   requestAnimationFrame( render );
 
 }
-lastTime = Date.now();
 render();
