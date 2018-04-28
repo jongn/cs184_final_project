@@ -25,6 +25,16 @@ var subtractGradient;
 var vorticity;
 var draw;
 
+var displaySettings = {
+    Slab: "Density"
+};
+gui = new dat.GUI();
+gui.add(displaySettings, "Slab", [
+    "Density",
+    "Velocity",
+    "Temperature",
+]);
+
 function scene_setup(){
     scene = new THREE.Scene();
     var width = window.innerWidth;
@@ -138,7 +148,6 @@ function render() {
   advect.compute(renderer, velocity.read, velocity.read, 1.0, velocity.write);
   const dt = Math.min((Date.now() - lastTime) / 1000, 0.016)
 
-
   velocity.swap();
 
   advect.compute(renderer, velocity.read, density.read, 0.98, density.write);
@@ -176,7 +185,17 @@ function render() {
   // vorticity.compute(renderer, velocity.read, curl.read, dt, velocity.write);
   // velocity.swap()
 
-  draw.compute(renderer, density.read, drawTexture);
+  var read;
+  let curr = displaySettings.Slab
+  if (curr == "Density") {
+      read = density.read;
+  } else if (curr == "Velocity") {
+      read = velocity.read;
+  } else if (curr == "Temperature") {
+      read = temperature.read;
+  }
+
+  draw.compute(renderer, read, drawTexture);
 
   //var gl = renderer.getContext();
   
