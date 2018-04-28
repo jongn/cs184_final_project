@@ -35,6 +35,18 @@ gui.add(displaySettings, "Slab", [
     "Temperature",
 ]);
 
+var pressureSettings = {
+    Iterations: 20
+};
+var pressureFolder = gui.addFolder("Pressure");
+    pressureFolder.add(pressureSettings, "Iterations", 0, 50, 1);
+
+var tempSettings = {
+    Ambient: -0.1
+};
+var tempFolder = gui.addFolder("Temperature");
+    tempFolder.add(tempSettings, "Ambient", -1, 1, 0.1);
+
 function scene_setup(){
     scene = new THREE.Scene();
     var width = window.innerWidth;
@@ -157,7 +169,7 @@ function render() {
   temperature.swap();
 
 
-  buoyancy.compute(renderer, velocity.read, temperature.read, density.read, dt, velocity.write);
+  buoyancy.compute(renderer, velocity.read, temperature.read, density.read, tempSettings.ambientTemp, dt, velocity.write);
   velocity.swap();
 
   externalForce.compute(renderer, velocity.read, velocity.write);
@@ -173,7 +185,7 @@ function render() {
   diverge.swap();
 
   renderer.clearTarget(pressure.read, true, false, false);
-  for (var i = 0; i < 10; i++) {
+  for (var i = 0; i < pressureSettings.Iterations; i++) {
     jacobi.compute(renderer, pressure.read, diverge.read, -1.0, 4.0, pressure.write);
     pressure.swap();
   }
