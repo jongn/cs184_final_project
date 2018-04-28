@@ -60,7 +60,7 @@
         void main() {
             vec2 pixel = gl_FragCoord.xy / res.xy;
             float dist = distance(smokeSource.xy,gl_FragCoord.xy);
-            vec2 smoke = smokeSource.z * max(10.0-dist,0.0) * sourceVelocity + vec2(94, 244) / res.xy;
+            vec2 smoke = smokeSource.z * max(8.0-dist,0.0) * sourceVelocity / res.xy;
             gl_FragColor = vec4(texture2D(bufferTexture, pixel).xy + smoke, 0.0, 1.0);
         }
     </script>
