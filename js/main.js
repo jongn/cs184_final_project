@@ -33,6 +33,7 @@ gui.add(displaySettings, "Slab", [
     "Density",
     "Velocity",
     "Temperature",
+    "Vorticity",
 ]);
 
 var pressureSettings = {
@@ -88,7 +89,7 @@ function buffer_texture_setup(){
     divergence = new Divergence();
     subtractGradient = new SubtractGradient();
     curl = new Curl();
-    vorticity = new Vorticity();
+    vorticityConf = new VorticityConf();
 
     // create slabs
 
@@ -98,7 +99,7 @@ function buffer_texture_setup(){
     pressure = new Slab();
     temperature = new Slab();
     diverge = new Slab();
-    curlSlab = new Slab();
+    vorticity = new Slab();
 
     //drawTexture is what is actually being drawn
 
@@ -181,6 +182,12 @@ function render() {
   //externalForce.compute(renderer, temperature.read, temperature.write);
   //temperature.swap();
 
+  curl.compute(renderer, velocity.read, vorticity.write);
+  vorticity.swap();
+
+  vorticityConf.compute(renderer, velocity.read, vorticity.read, 1.0, velocity.write);
+  velocity.swap();
+
   divergence.compute(renderer, velocity.read, 1.0, 1.0, diverge.write);
   diverge.swap();
 
@@ -205,6 +212,8 @@ function render() {
       read = velocity.read;
   } else if (curr == "Temperature") {
       read = temperature.read;
+  } else if (curr == "Vorticity") {
+      read = vorticity.read;
   }
 
   draw.compute(renderer, read, drawTexture);
@@ -217,10 +226,9 @@ function render() {
   // use for debugging
   /*
   var pixel = new Uint8Array(4);
-  gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+  gl.readPixels(50, 50, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
   console.log(pixel);
   */
-
 
   requestAnimationFrame( render );
 
