@@ -176,10 +176,11 @@
         uniform vec2 res;
         uniform sampler2D velocityField;
         uniform sampler2D curlField;
-        uniform float dt;
         uniform float eps;
+        uniform float dt;
         uniform float dx;
         uniform float dy;
+        uniform float weight;
 
         void main() {
             vec2 istep = vec2(1.0 / res.x, 0.0);
@@ -197,10 +198,10 @@
 
 
                 vec2 cross = vec2(psi.y * vorticity.x, psi.x * vorticity.y * -1.0);
-                force = cross * dt * vec2(0.3, 0.3);
+                force = cross * dt;
             }
             vec2 velocity = texture2D(velocityField, ij).xy;
-            gl_FragColor = vec4(velocity + force, 0.0, 1.0);
+            gl_FragColor = vec4(velocity + weight * force, 0.0, 1.0);
         }
     </script>
     <script src="js/Slab.js"></script>

@@ -34,7 +34,7 @@ gui.add(displaySettings, "Slab", [
     "Density",
     "Velocity",
     "Temperature",
-    "Vorticity",
+    "Vorticity"
 ]);
 
 var pressureSettings = {
@@ -44,10 +44,24 @@ var pressureFolder = gui.addFolder("Pressure");
     pressureFolder.add(pressureSettings, "Iterations", 0, 50, 1);
 
 var tempSettings = {
-    Ambient: -0.1
+    Ambient: 0.0
 };
 var tempFolder = gui.addFolder("Temperature");
     tempFolder.add(tempSettings, "Ambient", -0.5, 0.5, 0.05);
+
+var vorticitySettings = {
+    Curl: 0.2
+};
+var vorticityFolder = gui.addFolder("Vorticity");
+    vorticityFolder.add(vorticitySettings, "Curl", 0, 1.0, 0.05);
+
+var colorSettings = {
+    Color: "Constant"
+};
+gui.add(colorSettings, "Color", [
+    "Constant",
+    "Velocity-Based"
+]);
 
 function scene_setup(){
     scene = new THREE.Scene();
@@ -179,8 +193,14 @@ function render() {
   externalVelocity.compute(renderer, velocity.read, velocity.write);
   velocity.swap();
 
-  color = [50, 50, 50];
-  externalDensity.compute(renderer, density.read, color, density.write);
+  let currColor = colorSettings.Color;
+
+  if (currColor == "Constant") {
+      color = [50, 50, 50];
+      externalDensity.compute(renderer, density.read, color, density.write);
+  } else if (currColor == "Velocity-Based") {
+      externalVelocity.compute(renderer, density.read, density.write);
+  }
   density.swap();
 
   //externalForce.compute(renderer, temperature.read, temperature.write);
@@ -189,7 +209,7 @@ function render() {
   curl.compute(renderer, velocity.read, vorticity.write);
   vorticity.swap();
 
-  vorticityConf.compute(renderer, velocity.read, vorticity.read, 1.0, velocity.write);
+  vorticityConf.compute(renderer, velocity.read, vorticity.read, vorticitySettings.Curl, velocity.write);
   velocity.swap();
 
   divergence.compute(renderer, velocity.read, 1.0, 1.0, diverge.write);
@@ -209,17 +229,21 @@ function render() {
   // velocity.swap()
 
   var read;
-  let curr = displaySettings.Slab
-  if (curr == "Density") {
-      draw.setDisplay(new THREE.Vector3(0,0,0), new THREE.Vector3(1,0.1,0.5));
+  let currSlab = displaySettings.Slab;
+  if (currSlab == "Density") {
+      if (currColor == "Constant") {
+        draw.setDisplay(new THREE.Vector3(0,0,0), new THREE.Vector3(1.0,0.2,0.8));
+      } else if (currColor == "Velocity-Based") {
+        draw.displayNeg();
+      }
       read = density.read;
-  } else if (curr == "Velocity") {
+  } else if (currSlab == "Velocity") {
       draw.displayNeg();
       read = velocity.read;
-  } else if (curr == "Temperature") {
+  } else if (currSlab == "Temperature") {
       draw.displayNeg();
       read = temperature.read;
-  } else if (curr == "Vorticity") {
+  } else if (currSlab == "Vorticity") {
       read = vorticity.read;
   }
 
