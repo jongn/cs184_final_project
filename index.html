@@ -158,14 +158,16 @@
     <script id="Curl" type="shader-code">
         uniform vec2 res;
         uniform sampler2D velocityField;
+        uniform float dx;
+        uniform float dy;
 
         void main() {
             vec2 istep = vec2(1.0 / res.x, 0.0);
             vec2 jstep = vec2(0.0, 1.0 / res.y);
             vec2 ij = gl_FragCoord.xy / res.xy;
 
-            float dvdx = texture2D(velocityField, ij + istep).y - texture2D(velocityField, ij - istep).y;
-            float dudy = texture2D(velocityField, ij + jstep).x - texture2D(velocityField, ij - jstep).x;
+            float dvdx = (texture2D(velocityField, ij + istep).y - texture2D(velocityField, ij - istep).y) / (2.0 * dx);
+            float dudy = (texture2D(velocityField, ij + jstep).x - texture2D(velocityField, ij - jstep).x) / (2.0 * dy);
 
             gl_FragColor = vec4(dvdx - dudy, 0.0, 0.0, 1.0);
         }
@@ -186,15 +188,17 @@
 
             float etaX = (abs(texture2D(curlField, ij + istep).x) - abs(texture2D(curlField, ij - istep).x)) / (2.0 * dx);
             float etaY = (abs(texture2D(curlField, ij + jstep).x) - abs(texture2D(curlField, ij - jstep).x)) / (2.0 * dy);
+            vec2 force = vec2(0.0);
+            if (abs(etaX) > eps && abs(etaY) > eps) {
 
-            vec2 psi = vec2(etaX / max(eps, abs(etaX)), etaY / max(eps, abs(etaY)));
-            vec2 vorticity = texture2D(curlField, ij).xy;
+                vec2 psi = vec2(etaX / abs(etaX), etaY / abs(etaY));
+                vec2 vorticity = texture2D(curlField, ij).xy;
 
 
 
-            vec2 cross = vec2(psi.x * vorticity.y, psi.y * vorticity.x * 1.0);
-            vec2 force = cross * dt * vec2(0.3, 0.3);
-
+                vec2 cross = vec2(psi.y * vorticity.x, psi.x * vorticity.y * -1.0);
+                force = cross * dt * vec2(0.3, 0.3);
+            }
             vec2 velocity = texture2D(velocityField, ij).xy;
             gl_FragColor = vec4(velocity + force, 0.0, 1.0);
         }
