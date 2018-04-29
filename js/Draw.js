@@ -30,3 +30,14 @@ Draw.prototype.compute = function(renderer, input, output) {
     this.uniforms.scale.value = this.scale;
     renderer.render(this.scene, this.camera, output, false);
 }
+
+Draw.prototype.displayNeg = function() {
+        this.bias = new THREE.Vector3(0.5,0.5,0.5);
+        this.scale = new THREE.Vector3(0.5,0.5,0.5); 
+}
+
+Draw.prototype.setDisplay = function(bias, scale) {
+        this.bias = bias;
+        this.scale = scale; 
+}
+
