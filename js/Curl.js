@@ -3,7 +3,9 @@ Curl = function() {
     this.res = new THREE.Vector2( 512, 256);
     this.uniforms = {
         res : {type: 'v2' },
-        velocityField: { type: "t" }
+        velocityField: { type: "t" },
+        dx: { type: "f" },
+        dy: { type: "f" }
     };
     var material = new THREE.ShaderMaterial({
         uniforms: this.uniforms,
@@ -22,5 +24,7 @@ Curl = function() {
 Curl.prototype.compute = function(renderer, velocityField, output) {
     this.uniforms.res.value = this.res;
     this.uniforms.velocityField.value = velocityField;
+    this.uniforms.dx.value = 1.0;
+    this.uniforms.dy.value = 1.0;
     renderer.render(this.scene, this.camera, output, false);
 }

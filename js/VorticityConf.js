@@ -29,7 +29,7 @@ VorticityConf.prototype.compute = function(renderer, velocityField, curlField, d
     this.uniforms.velocityField.value = velocityField;
     this.uniforms.curlField.value = curlField;
     this.uniforms.dt.value = dt;
-    this.uniforms.eps.value = 2.4414e-4;
+    this.uniforms.eps.value = 0.000001;
     this.uniforms.dx.value = 1.0;
     this.uniforms.dy.value = 1.0;
 
