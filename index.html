@@ -153,40 +153,43 @@
         uniform sampler2D velocityField;
 
         void main() {
-            vec2 pixel = gl_FragCoord.xy / res.xy;
+            vec2 istep = vec2(1.0 / res.x, 0.0);
+            vec2 jstep = vec2(0.0, 1.0 / res.y);
+            vec2 ij = gl_FragCoord.xy / res.xy;
 
-            vec2 xOffset = vec2(1.0 / res.x, 0.0);
-            vec2 yOffset = vec2(0.0, 1.0 / res.y);
+            float dvdx = texture2D(velocityField, ij + istep).y - texture2D(velocityField, ij - istep).y;
+            float dudy = texture2D(velocityField, ij + jstep).x - texture2D(velocityField, ij - jstep).x;
 
-            float l = texture2D(velocityField, pixel - xOffset).y;
-            float r = texture2D(velocityField, pixel + xOffset).y;
-            float b = texture2D(velocityField, pixel - yOffset).x;
-            float t = texture2D(velocityField, pixel + yOffset).x;
-
-            float vorticity = r - l - t + b;
-            gl_FragColor = vec4(vorticity, 0.0, 0.0, 1.0);
+            gl_FragColor = vec4(dvdx - dudy, 0.0, 0.0, 1.0);
         }
     </script>
-    <script id="Vorticity" type="shader-code">
+    <script id="VorticityConf" type="shader-code">
         uniform vec2 res;
         uniform sampler2D velocityField;
         uniform sampler2D curlField;
         uniform float dt;
-        uniform float curl;
+        uniform float eps;
+        uniform float dx;
+        uniform float dy;
 
         void main() {
-            vec2 pixel = gl_FragCoord.xy / res.xy;
+            vec2 istep = vec2(1.0 / res.x, 0.0);
+            vec2 jstep = vec2(0.0, 1.0 / res.y);
+            vec2 ij = gl_FragCoord.xy / res.xy;
 
-            vec2 yOffset = vec2(0.0, 1.0 / res.y);
+            float etaX = (abs(texture2D(curlField, ij + istep).x) - abs(texture2D(curlField, ij - istep).x)) / (2.0 * dx);
+            float etaY = (abs(texture2D(curlField, ij + jstep).x) - abs(texture2D(curlField, ij - jstep).x)) / (2.0 * dy);
 
-            float b = texture2D(curlField, pixel - yOffset).x;
-            float t = texture2D(curlField, pixel + yOffset).x;
-            float c = texture2D(curlField, pixel).x;
+            vec2 psi = vec2(etaX / max(eps, abs(etaX)), etaY / max(eps, abs(etaY)));
+            vec2 vorticity = texture2D(curlField, ij).xy;
 
-            vec2 force = vec2(abs(t) - abs(b), 0.0);
-            force *= 1.0 / length(force + 0.00001) * curl * c;
-            vec2 v = texture2D(velocityField, uv).xy;
-            gl_FragColor = vec4(v + force * dt, 0.0, 1.0);
+
+
+            vec2 cross = vec2(psi.x * vorticity.y, psi.y * vorticity.x * 1.0);
+            vec2 force = cross * dt * vec2(0.3, 0.3);
+
+            vec2 velocity = texture2D(velocityField, ij).xy;
+            gl_FragColor = vec4(velocity + force, 0.0, 1.0);
         }
     </script>
     <script src="js/Slab.js"></script>
@@ -197,7 +200,7 @@
     <script src="js/Jacobi.js"></script>
     <script src="js/Divergence.js"></script>
     <script src="js/SubtractGradient.js"></script>
-    <script src="js/Vorticity.js"></script>
+    <script src="js/VorticityConf.js"></script>
     <script src="js/Curl.js"></script>
     <script src="js/main.js"></script>
   </body>
