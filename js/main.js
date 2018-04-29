@@ -20,7 +20,8 @@ var advect;
 var buoyancy;
 var divergence;
 var jacobi;
-var externalForce;
+var externalVelocity;
+var externalDensity;
 var subtractGradient;
 var vorticity;
 var draw;
@@ -81,7 +82,8 @@ function buffer_texture_setup(){
     //create shader programs
 
     advect = new Advect();
-    externalForce = new ExternalForce();
+    externalVelocity = new ExternalVelocity();
+    externalDensity = new ExternalDensity();
     buoyancy = new Buoyancy();
     draw = new Draw();
     jacobi = new Jacobi();
@@ -126,11 +128,13 @@ function UpdateMousePosition(X,Y){
     var deltaTime = currentTime - timeStamp;
 
 
-    externalForce.smokeSource.x = X * 512 / window.innerWidth;
-    externalForce.smokeSource.y = Y * 256 / window.innerHeight;
+    externalVelocity.smokeSource.x = X * 512 / window.innerWidth;
+    externalVelocity.smokeSource.y = Y * 256 / window.innerHeight;
+    externalDensity.smokeSource.x = X * 512 / window.innerWidth;
+    externalDensity.smokeSource.y = Y * 256 / window.innerHeight;
 
-    externalForce.sourceVelocity.x = Math.round((X-lastX) / deltaTime * 100);
-    externalForce.sourceVelocity.y = Math.round((Y-lastY) / deltaTime * 100);
+    externalVelocity.sourceVelocity.x = Math.round((X-lastX) / deltaTime * 100);
+    externalVelocity.sourceVelocity.y = Math.round((Y-lastY) / deltaTime * 100);
 
 
 
@@ -147,11 +151,13 @@ document.onmousedown = function(event){
     timeStamp = Date.now();
     lastX = event.clientX;
     lastY = window.innerHeight - event.clientY;
-    externalForce.smokeSource.z = 1.0;
+    externalVelocity.smokeSource.z = 1.0;
+    externalDensity.smokeSource.z = 1.0;
 }
 document.onmouseup = function(event){
     mouseDown = false;
-    externalForce.smokeSource.z = 0;
+    externalVelocity.smokeSource.z = 0;
+    externalDensity.smokeSource.z = 0;
 }
 
 //Render everything!
@@ -166,14 +172,14 @@ function render() {
   advect.compute(renderer, velocity.read, temperature.read, 0.98, temperature.write);
   temperature.swap();
 
-  console.log(tempSettings.Ambient)
   buoyancy.compute(renderer, velocity.read, temperature.read, density.read, tempSettings.Ambient, velocity.write);
   velocity.swap();
 
-  externalForce.compute(renderer, velocity.read, velocity.write);
+  externalVelocity.compute(renderer, velocity.read, velocity.write);
   velocity.swap();
 
-  externalForce.compute(renderer, density.read, density.write);
+  color = [50, 50, 50];
+  externalDensity.compute(renderer, density.read, color, density.write);
   density.swap();
 
   //externalForce.compute(renderer, temperature.read, temperature.write);
@@ -198,10 +204,13 @@ function render() {
   var read;
   let curr = displaySettings.Slab
   if (curr == "Density") {
+      draw.setDisplay(new THREE.Vector3(0,0,0), new THREE.Vector3(1,0.1,0.5));
       read = density.read;
   } else if (curr == "Velocity") {
+      draw.displayNeg();
       read = velocity.read;
   } else if (curr == "Temperature") {
+      draw.displayNeg();
       read = temperature.read;
   }
 
