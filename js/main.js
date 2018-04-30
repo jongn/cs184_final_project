@@ -28,6 +28,8 @@ var vorticity;
 var splat;
 var draw;
 
+var width;
+var height;
 var color = [0,0,0];
 
 var displaySettings = {
@@ -38,7 +40,9 @@ gui.add(displaySettings, "Slab", [
     "Density",
     "Velocity",
     "Temperature",
-    "Vorticity"
+    "Vorticity",
+    "Pressure",
+    "Divergence"
 ]);
 
 var pressureSettings = {
@@ -70,14 +74,21 @@ gui.add(colorSettings, "Color", [
 
 function scene_setup(){
     scene = new THREE.Scene();
-    var width = window.innerWidth;
-    var height = window.innerHeight;
+    width = window.innerWidth;
+    height = window.innerHeight;
     camera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0, 1 );
     renderer = new THREE.WebGLRenderer();
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( width, height );
     document.body.appendChild( renderer.domElement );
 }
+
+function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    renderer.setSize(width, height);
+}
+window.onresize = resize;
 
 
 function buffer_texture_setup(){
@@ -261,10 +272,6 @@ function render() {
   subtractGradient.compute(renderer, velocity.read, pressure.read, 1.0, 1.0, velocity.write);
   velocity.swap()
 
-  // curl.compute(renderer, velocity.read, velocity.write);
-  // vorticity.compute(renderer, velocity.read, curl.read, dt, velocity.write);
-  // velocity.swap()
-
   var read;
   let currSlab = displaySettings.Slab;
   if (currSlab == "Density") {
@@ -282,7 +289,14 @@ function render() {
       draw.setDisplay(new THREE.Vector3(0.5 + amb,0.5,0.5 - amb), new THREE.Vector3(1.0,1.0,1.0));
       read = temperature.read;
   } else if (currSlab == "Vorticity") {
+      draw.displayNeg();
       read = vorticity.read;
+  } else if (currSlab == "Pressure") {
+      draw.displayNeg();
+      read = pressure.read;
+  } else if (currSlab == "Divergence") {
+      draw.displayNeg();
+      read = diverge.read;
   }
 
   draw.compute(renderer, read, drawTexture);
