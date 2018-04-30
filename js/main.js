@@ -32,6 +32,8 @@ var boundary;
 var width;
 var height;
 var color = [0,0,0];
+//var res = new THREE.Vector2(768, 384);
+var res = new THREE.Vector2(512, 256);
 
 var displaySettings = {
     Slab: "Density"
@@ -119,33 +121,33 @@ function buffer_texture_setup(){
 
     //create shader programs
 
-    advect = new Advect();
-    externalVelocity = new ExternalVelocity();
-    externalDensity = new ExternalDensity();
-    externalTemperature = new ExternalTemperature();
-    buoyancy = new Buoyancy();
-    draw = new Draw();
-    jacobi = new Jacobi();
-    divergence = new Divergence();
-    subtractGradient = new SubtractGradient();
-    curl = new Curl();
-    vorticityConf = new VorticityConf();
-    boundary = new Boundary();
-    splat = new Splat();
+    advect = new Advect(res);
+    externalVelocity = new ExternalVelocity(res);
+    externalDensity = new ExternalDensity(res);
+    externalTemperature = new ExternalTemperature(res);
+    buoyancy = new Buoyancy(res);
+    draw = new Draw(res);
+    jacobi = new Jacobi(res);
+    divergence = new Divergence(res);
+    subtractGradient = new SubtractGradient(res);
+    curl = new Curl(res);
+    vorticityConf = new VorticityConf(res);
+    boundary = new Boundary(res);
+    splat = new Splat(res);
 
     // create slabs
 
-    velocity = new Slab();
-    density = new Slab();
-    temperature = new Slab();
-    pressure = new Slab();
-    temperature = new Slab();
-    diverge = new Slab();
-    vorticity = new Slab();
+    velocity = new Slab(res);
+    density = new Slab(res);
+    temperature = new Slab(res);
+    pressure = new Slab(res);
+    temperature = new Slab(res);
+    diverge = new Slab(res);
+    vorticity = new Slab(res);
 
     //drawTexture is what is actually being drawn
 
-    drawTexture = new THREE.WebGLRenderTarget( 512, 256, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, type: THREE.FloatType });
+    drawTexture = new THREE.WebGLRenderTarget( res.x, res.y, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, type: THREE.FloatType });
 
     plane = new THREE.PlaneBufferGeometry( 2, 2 );
     finalMaterial =  new THREE.MeshBasicMaterial({map: drawTexture});
@@ -169,12 +171,12 @@ function UpdateMousePosition(X,Y){
     var deltaTime = currentTime - timeStamp;
 
 
-    externalVelocity.smokeSource.x = X * 512 / window.innerWidth;
-    externalVelocity.smokeSource.y = Y * 256 / window.innerHeight;
-    externalDensity.smokeSource.x = X * 512 / window.innerWidth;
-    externalDensity.smokeSource.y = Y * 256 / window.innerHeight;
-    externalTemperature.smokeSource.x = X * 512 / window.innerWidth;
-    externalTemperature.smokeSource.y = Y * 256 / window.innerHeight;
+    externalVelocity.smokeSource.x = X * res.x / window.innerWidth;
+    externalVelocity.smokeSource.y = Y * res.y / window.innerHeight;
+    externalDensity.smokeSource.x = X * res.x / window.innerWidth;
+    externalDensity.smokeSource.y = Y * res.y / window.innerHeight;
+    externalTemperature.smokeSource.x = X * res.x / window.innerWidth;
+    externalTemperature.smokeSource.y = Y * res.y / window.innerHeight;
 
     externalVelocity.sourceVelocity.x = Math.round((X-lastX) / deltaTime * 100);
     externalVelocity.sourceVelocity.y = Math.round((Y-lastY) / deltaTime * 100);

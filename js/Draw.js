@@ -1,6 +1,6 @@
-Draw = function() {
+Draw = function(res) {
     var geometry = new THREE.PlaneBufferGeometry( 2 * (512 - 2) / 512, 2 * (256 - 2) / 256 );
-    this.res = new THREE.Vector2(512, 256);
+    this.res = res;
     this.bias = new THREE.Vector3(0.5,0.5,0.5);
     this.scale = new THREE.Vector3(0.5,0.5,0.5);
     this.uniforms = {

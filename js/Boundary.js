@@ -1,11 +1,11 @@
-Boundary = function() {
+Boundary = function(res) {
     var geometry = new THREE.PlaneBufferGeometry( 2 * (512 - 2) / 512, 2 * (256 - 2) / 256 );
     this.xloffset = new THREE.Vector2(0.0, 0.0);
     this.xroffset = new THREE.Vector2(0.0, 0.0);
     this.yboffset = new THREE.Vector2(0.0, 0.0);
     this.ytoffset = new THREE.Vector2(0.0, 0.0);
     this.scaling = 0.0;
-    this.res = new THREE.Vector2(512, 256);
+    this.res = res;
     this.uniforms = {
         read: { type: "t" },
         res : {type: 'v2' },
