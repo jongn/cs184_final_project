@@ -22,10 +22,16 @@ var divergence;
 var jacobi;
 var externalVelocity;
 var externalDensity;
+var externalTemperature;
 var subtractGradient;
 var vorticity;
+var splat;
 var draw;
 var boundary;
+
+var width;
+var height;
+var color = [0,0,0];
 
 var displaySettings = {
     Slab: "Density"
@@ -35,7 +41,9 @@ gui.add(displaySettings, "Slab", [
     "Density",
     "Velocity",
     "Temperature",
-    "Vorticity"
+    "Vorticity",
+    "Pressure",
+    "Divergence"
 ]);
 
 var pressureSettings = {
@@ -62,6 +70,7 @@ var colorSettings = {
 };
 gui.add(colorSettings, "Color", [
     "Constant",
+    "Cos-Function",
     "Velocity-Based"
 ]);
 
@@ -72,14 +81,21 @@ gui.add(boundarySettings, "Boundaries");
 
 function scene_setup(){
     scene = new THREE.Scene();
-    var width = window.innerWidth;
-    var height = window.innerHeight;
+    width = window.innerWidth;
+    height = window.innerHeight;
     camera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0, 1 );
     renderer = new THREE.WebGLRenderer();
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( width, height );
     document.body.appendChild( renderer.domElement );
 }
+
+function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    renderer.setSize(width, height);
+}
+window.onresize = resize;
 
 
 function buffer_texture_setup(){
@@ -107,6 +123,7 @@ function buffer_texture_setup(){
     externalVelocity = new ExternalVelocity();
     externalDensity = new ExternalDensity();
     externalTemp = new ExternalTemp();
+    externalTemperature = new ExternalTemperature();
     buoyancy = new Buoyancy();
     draw = new Draw();
     jacobi = new Jacobi();
@@ -115,6 +132,7 @@ function buffer_texture_setup(){
     curl = new Curl();
     vorticityConf = new VorticityConf();
     boundary = new Boundary();
+    splat = new Splat();
 
     // create slabs
 
@@ -158,11 +176,11 @@ function UpdateMousePosition(X,Y){
     externalDensity.smokeSource.y = Y * 256 / window.innerHeight;
     externalTemp.smokeSource.x = X * 512 / window.innerWidth;
     externalTemp.smokeSource.y = Y * 256 / window.innerHeight;
+    externalTemperature.smokeSource.x = X * 512 / window.innerWidth;
+    externalTemperature.smokeSource.y = Y * 256 / window.innerHeight;
 
     externalVelocity.sourceVelocity.x = Math.round((X-lastX) / deltaTime * 100);
     externalVelocity.sourceVelocity.y = Math.round((Y-lastY) / deltaTime * 100);
-
-
 
     timeStamp = currentTime;
     lastX = X;
@@ -180,18 +198,34 @@ document.onmousedown = function(event){
     externalVelocity.smokeSource.z = 1.0;
     externalDensity.smokeSource.z = 1.0;
     externalTemp.smokeSource.z = 1.0;
+    externalTemperature.smokeSource.z = 0.2;
+    color = [Math.cos(timeStamp)* 150, Math.cos(timeStamp) * Math.sin(timeStamp) * 200, 0];
+
 }
 document.onmouseup = function(event){
     mouseDown = false;
     externalVelocity.smokeSource.z = 0;
     externalDensity.smokeSource.z = 0;
     externalTemp.smokeSource.z = 0;
+    externalTemperature.smokeSource.z = 0;
 }
 
-//Render everything!
-function render() {
+function multipleSplats(amount) {
+  for (let i = 0; i < amount; i++) {
+    const color = [Math.random() * 10, Math.random() * 10, Math.random() * 10];
+    const x = window.innerWidth * Math.random();
+    const y = window.innerHeight * Math.random();
+    const dx = 1000 * (Math.random() - 0.5);
+    const dy = 1000 * (Math.random() - 0.5);
+    oneSplat(x, y, dx, dy, color);
+  }
+}
 
-  advect.compute(renderer, velocity.read, velocity.read, 1.0, velocity.write);
+function oneSplat(x, y, dx, dy, color) {
+  point = [x / window.innerWidth, 1.0 - y / window.innerHeight];
+  color_v = [dx, -dy, 1.0];
+  radius = 0.005;
+  splat.compute(renderer, velocity.read, point, color_v, radius, velocity.write);
   velocity.swap();
 
   if (boundarySettings.Boundaries) {
@@ -201,21 +235,36 @@ function render() {
   }
 
   advect.compute(renderer, velocity.read, density.read, 0.98, density.write);
+
+  color_d = [color[0] * 0.3, color[1] * 0.3, color[2] * 0.3];
+  splat.compute(renderer, density.read, point, color_d, radius, density.write);
   density.swap();
+}
+
+
+//Render everything!
+function render() {
+
+  advect.compute(renderer, velocity.read, velocity.read, 1.0, 0.0, velocity.write);
+  velocity.swap();
+
+  advect.compute(renderer, velocity.read, density.read, 0.98, 0.0, density.write);
+  density.swap();
+
+  advect.compute(renderer, velocity.read, temperature.read, 0.98, 0.0, temperature.write);
+  temperature.swap();
+
+  buoyancy.compute(renderer, velocity.read, temperature.read, density.read, 0.5 * tempSettings.Ambient, velocity.write);
+  velocity.swap();
 
   if (boundarySettings.Boundaries) {
     boundary.velocity();
     boundary.compute(renderer, density.read, density.write);
     density.swap();
+    boundary.compute(renderer, velocity.read, velocity.write);
+    velocity.swap();
   }
 
-  advect.compute(renderer, velocity.read, temperature.read, 0.98, temperature.write);
-  temperature.swap();
-
-
-
-  buoyancy.compute(renderer, velocity.read, temperature.read, density.read, tempSettings.Ambient, velocity.write);
-  velocity.swap();
 
   //boundary.compute(renderer, velocity.read, velocity.write);
   //velocity.swap();
@@ -229,23 +278,27 @@ function render() {
   let currColor = colorSettings.Color;
 
   if (currColor == "Constant") {
-      color = [50, 50, 50];
+      color = [50,50,50];
+      externalDensity.compute(renderer, density.read, color, density.write);
+  } else if (currColor == "Cos-Function") {
       externalDensity.compute(renderer, density.read, color, density.write);
   } else if (currColor == "Velocity-Based") {
       externalVelocity.compute(renderer, density.read, density.write);
   }
   density.swap();
 
-  externalTemp.compute(renderer, temperature.read, 0.5, temperature.write);
-  temperature.swap();
-
   if (boundarySettings.Boundaries) {
     boundary.velocity();
     boundary.compute(renderer, density.read, density.write);
     density.swap();
+    boundary.compute(renderer, velocity.read, velocity.write);
+    velocity.swap();
   }
 
-  //externalForce.compute(renderer, temperature.read, temperature.write);
+  externalTemp.compute(renderer, temperature.read, 0.01, temperature.write);
+  temperature.swap();
+
+  //externalTemperature.compute(renderer, temperature.read, temperature.write);
   //temperature.swap();
 
   curl.compute(renderer, velocity.read, vorticity.write);
@@ -292,8 +345,8 @@ function render() {
   let currSlab = displaySettings.Slab;
   if (currSlab == "Density") {
       if (currColor == "Constant") {
-        draw.setDisplay(new THREE.Vector3(0,0,0), new THREE.Vector3(1.0,0.2,0.8));
-      } else if (currColor == "Velocity-Based") {
+        draw.setDisplay(new THREE.Vector3(0.0,0.0,0.0), new THREE.Vector3(1.0,0.2,0.8));
+      } else {
         draw.displayNeg();
       }
       read = density.read;
@@ -301,10 +354,18 @@ function render() {
       draw.displayNeg();
       read = velocity.read;
   } else if (currSlab == "Temperature") {
-      draw.displayNeg();
+      amb = 0.5 * tempSettings.Ambient
+      draw.setDisplay(new THREE.Vector3(0.5 + amb,0.5,0.5 - amb), new THREE.Vector3(1.0,1.0,1.0));
       read = temperature.read;
   } else if (currSlab == "Vorticity") {
+      draw.displayNeg();
       read = vorticity.read;
+  } else if (currSlab == "Pressure") {
+      draw.displayNeg();
+      read = pressure.read;
+  } else if (currSlab == "Divergence") {
+      draw.displayNeg();
+      read = diverge.read;
   }
 
   draw.compute(renderer, read, drawTexture);

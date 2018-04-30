@@ -1,16 +1,15 @@
-Advect = function() {
+ExternalTemperature = function() {
     var geometry = new THREE.PlaneBufferGeometry( 2 * (512 - 2) / 512, 2 * (256 - 2) / 256 );
     this.res = new THREE.Vector2(512, 256);
+    this.smokeSource = new THREE.Vector3(0,0,0);
     this.uniforms = {
+        bufferTexture: { type: "t" },
         res : {type: 'v2' },
-        velocityField: { type: "t" },
-        advectionField: { type: "t" },
-        dissipation: {type:"f" },
-        upwardTemp : { type : "f" }
+        smokeSource: {type:"v3" },
     };
     var material = new THREE.ShaderMaterial({
         uniforms: this.uniforms,
-        fragmentShader: document.getElementById( 'Advect' ).innerHTML,
+        fragmentShader: document.getElementById( 'ExternalTemperature' ).innerHTML,
         depthWrite: false,
         depthTest: false,
         blending: THREE.NoBlending
@@ -22,11 +21,9 @@ Advect = function() {
     this.scene.add(this.quad);
 }
 
-Advect.prototype.compute = function(renderer, velocityField, advectionField, dissipation, upwardTemp, output) {
+ExternalTemperature.prototype.compute = function(renderer, input, output) {
+    this.uniforms.bufferTexture.value = input;
     this.uniforms.res.value = this.res;
-    this.uniforms.velocityField.value = velocityField;
-    this.uniforms.advectionField.value = advectionField;
-    this.uniforms.dissipation.value = dissipation;
-    this.uniforms.upwardTemp.value = upwardTemp;
+    this.uniforms.smokeSource.value = this.smokeSource;
     renderer.render(this.scene, this.camera, output, false);
 }
