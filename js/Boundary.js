@@ -58,5 +58,13 @@ Boundary.prototype = {
         this.yboffset.set(0.0, 1.0);
         this.ytoffset.set(0.0, -1.0);
         this.scaling = -1.0;
+    },
+
+    pressure: function() {
+        this.xloffset.set(1.0, 0.0);
+        this.xroffset.set(-1.0, 0.0);
+        this.yboffset.set(0.0, 1.0);
+        this.ytoffset.set(0.0, -1.0);
+        this.scaling = 1.0;
     }
 }

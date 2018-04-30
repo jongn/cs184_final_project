@@ -72,6 +72,19 @@
             gl_FragColor = vec4(vec3(texture2D(bufferTexture, pixel).xy, 0.0) + smoke, 1.0);
         }
     </script>
+    <script id="ExternalTemp" type="shader-code">
+        uniform vec2 res;//The width and height of our screen
+        uniform sampler2D bufferTexture;//Our input texture
+        uniform vec3 smokeSource;//The x,y are the posiiton. The z is the power/density
+        uniform float temp;
+
+        void main() {
+            vec2 pixel = gl_FragCoord.xy / res.xy;
+            float dist = distance(smokeSource.xy,gl_FragCoord.xy);
+            float smoke = smokeSource.z * max(8.0-dist,0.0) * temp;
+            gl_FragColor = vec4(texture2D(bufferTexture, pixel).x + smoke, 0.0, 0.0, 1.0);
+        }
+    </script>
     <script id="Draw" type="shader-code">
         precision mediump float;
         uniform vec2 res;
@@ -233,6 +246,7 @@
     <script src="js/Advect.js"></script>
     <script src="js/ExternalVelocity.js"></script>
     <script src="js/ExternalDensity.js"></script>
+    <script src="js/ExternalTemp.js"></script>
     <script src="js/Draw.js"></script>
     <script src="js/Buoyancy.js"></script>
     <script src="js/Jacobi.js"></script>

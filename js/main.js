@@ -106,6 +106,7 @@ function buffer_texture_setup(){
     advect = new Advect();
     externalVelocity = new ExternalVelocity();
     externalDensity = new ExternalDensity();
+    externalTemp = new ExternalTemp();
     buoyancy = new Buoyancy();
     draw = new Draw();
     jacobi = new Jacobi();
@@ -155,6 +156,8 @@ function UpdateMousePosition(X,Y){
     externalVelocity.smokeSource.y = Y * 256 / window.innerHeight;
     externalDensity.smokeSource.x = X * 512 / window.innerWidth;
     externalDensity.smokeSource.y = Y * 256 / window.innerHeight;
+    externalTemp.smokeSource.x = X * 512 / window.innerWidth;
+    externalTemp.smokeSource.y = Y * 256 / window.innerHeight;
 
     externalVelocity.sourceVelocity.x = Math.round((X-lastX) / deltaTime * 100);
     externalVelocity.sourceVelocity.y = Math.round((Y-lastY) / deltaTime * 100);
@@ -176,11 +179,13 @@ document.onmousedown = function(event){
     lastY = window.innerHeight - event.clientY;
     externalVelocity.smokeSource.z = 1.0;
     externalDensity.smokeSource.z = 1.0;
+    externalTemp.smokeSource.z = 1.0;
 }
 document.onmouseup = function(event){
     mouseDown = false;
     externalVelocity.smokeSource.z = 0;
     externalDensity.smokeSource.z = 0;
+    externalTemp.smokeSource.z = 0;
 }
 
 //Render everything!
@@ -199,7 +204,7 @@ function render() {
   density.swap();
 
   if (boundarySettings.Boundaries) {
-    boundary.density();
+    boundary.velocity();
     boundary.compute(renderer, density.read, density.write);
     density.swap();
   }
@@ -231,8 +236,11 @@ function render() {
   }
   density.swap();
 
+  externalTemp.compute(renderer, temperature.read, 0.5, temperature.write);
+  temperature.swap();
+
   if (boundarySettings.Boundaries) {
-    boundary.density();
+    boundary.velocity();
     boundary.compute(renderer, density.read, density.write);
     density.swap();
   }
@@ -255,6 +263,12 @@ function render() {
   renderer.clearTarget(pressure.read, true, false, false);
   for (var i = 0; i < pressureSettings.Iterations; i++) {
     jacobi.compute(renderer, pressure.read, diverge.read, -1.0, 4.0, pressure.write);
+    pressure.swap();
+  }
+
+  if (boundarySettings.Boundaries) {
+    boundary.pressure();
+    boundary.compute(renderer, pressure.read, pressure.write);
     pressure.swap();
   }
 
