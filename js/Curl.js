@@ -1,6 +1,6 @@
-Curl = function() {
+Curl = function(res) {
     var geometry = new THREE.PlaneBufferGeometry( 2 * (512 - 2) / 512, 2 * (256 - 2) / 256 );
-    this.res = new THREE.Vector2( 512, 256);
+    this.res = res;
     this.uniforms = {
         res : {type: 'v2' },
         velocityField: { type: "t" },

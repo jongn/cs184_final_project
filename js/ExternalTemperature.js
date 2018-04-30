@@ -1,11 +1,13 @@
-ExternalTemperature = function() {
+ExternalTemperature = function(res) {
     var geometry = new THREE.PlaneBufferGeometry( 2 * (512 - 2) / 512, 2 * (256 - 2) / 256 );
-    this.res = new THREE.Vector2(512, 256);
+    this.res = res;
     this.smokeSource = new THREE.Vector3(0,0,0);
     this.uniforms = {
         bufferTexture: { type: "t" },
         res : {type: 'v2' },
         smokeSource: {type:"v3" },
+        temp: {type: 'f'},
+        radius: {type: 'f'}
     };
     var material = new THREE.ShaderMaterial({
         uniforms: this.uniforms,
@@ -21,9 +23,11 @@ ExternalTemperature = function() {
     this.scene.add(this.quad);
 }
 
-ExternalTemperature.prototype.compute = function(renderer, input, output) {
+ExternalTemperature.prototype.compute = function(renderer, input, temp, radius, output) {
     this.uniforms.bufferTexture.value = input;
     this.uniforms.res.value = this.res;
+    this.uniforms.temp.value = temp;
     this.uniforms.smokeSource.value = this.smokeSource;
+    this.uniforms.radius.value = radius;
     renderer.render(this.scene, this.camera, output, false);
 }
