@@ -6,6 +6,7 @@ ExternalTemperature = function() {
         bufferTexture: { type: "t" },
         res : {type: 'v2' },
         smokeSource: {type:"v3" },
+        temp: {type: 'f'}
     };
     var material = new THREE.ShaderMaterial({
         uniforms: this.uniforms,
@@ -21,9 +22,10 @@ ExternalTemperature = function() {
     this.scene.add(this.quad);
 }
 
-ExternalTemperature.prototype.compute = function(renderer, input, output) {
+ExternalTemperature.prototype.compute = function(renderer, input, temp, output) {
     this.uniforms.bufferTexture.value = input;
     this.uniforms.res.value = this.res;
+    this.uniforms.temp.value = temp;
     this.uniforms.smokeSource.value = this.smokeSource;
     renderer.render(this.scene, this.camera, output, false);
 }

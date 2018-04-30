@@ -122,7 +122,6 @@ function buffer_texture_setup(){
     advect = new Advect();
     externalVelocity = new ExternalVelocity();
     externalDensity = new ExternalDensity();
-    externalTemp = new ExternalTemp();
     externalTemperature = new ExternalTemperature();
     buoyancy = new Buoyancy();
     draw = new Draw();
@@ -174,8 +173,6 @@ function UpdateMousePosition(X,Y){
     externalVelocity.smokeSource.y = Y * 256 / window.innerHeight;
     externalDensity.smokeSource.x = X * 512 / window.innerWidth;
     externalDensity.smokeSource.y = Y * 256 / window.innerHeight;
-    externalTemp.smokeSource.x = X * 512 / window.innerWidth;
-    externalTemp.smokeSource.y = Y * 256 / window.innerHeight;
     externalTemperature.smokeSource.x = X * 512 / window.innerWidth;
     externalTemperature.smokeSource.y = Y * 256 / window.innerHeight;
 
@@ -197,8 +194,7 @@ document.onmousedown = function(event){
     lastY = window.innerHeight - event.clientY;
     externalVelocity.smokeSource.z = 1.0;
     externalDensity.smokeSource.z = 1.0;
-    externalTemp.smokeSource.z = 1.0;
-    externalTemperature.smokeSource.z = 0.2;
+    externalTemperature.smokeSource.z = 1.0;
     color = [Math.cos(timeStamp)* 150, Math.cos(timeStamp) * Math.sin(timeStamp) * 200, 0];
 
 }
@@ -206,7 +202,6 @@ document.onmouseup = function(event){
     mouseDown = false;
     externalVelocity.smokeSource.z = 0;
     externalDensity.smokeSource.z = 0;
-    externalTemp.smokeSource.z = 0;
     externalTemperature.smokeSource.z = 0;
 }
 
@@ -245,13 +240,13 @@ function oneSplat(x, y, dx, dy, color) {
 //Render everything!
 function render() {
 
-  advect.compute(renderer, velocity.read, velocity.read, 1.0, 0.0, velocity.write);
+  advect.compute(renderer, velocity.read, velocity.read, 1.0, velocity.write);
   velocity.swap();
 
-  advect.compute(renderer, velocity.read, density.read, 0.98, 0.0, density.write);
+  advect.compute(renderer, velocity.read, density.read, 0.98, density.write);
   density.swap();
 
-  advect.compute(renderer, velocity.read, temperature.read, 0.98, 0.0, temperature.write);
+  advect.compute(renderer, velocity.read, temperature.read, 0.98, temperature.write);
   temperature.swap();
 
   buoyancy.compute(renderer, velocity.read, temperature.read, density.read, 0.5 * tempSettings.Ambient, velocity.write);
@@ -259,8 +254,8 @@ function render() {
 
   if (boundarySettings.Boundaries) {
     boundary.velocity();
-    boundary.compute(renderer, density.read, density.write);
-    density.swap();
+    //boundary.compute(renderer, density.read, density.write);
+    //density.swap();
     boundary.compute(renderer, velocity.read, velocity.write);
     velocity.swap();
   }
@@ -289,17 +284,14 @@ function render() {
 
   if (boundarySettings.Boundaries) {
     boundary.velocity();
-    boundary.compute(renderer, density.read, density.write);
-    density.swap();
+    //boundary.compute(renderer, density.read, density.write);
+    //density.swap();
     boundary.compute(renderer, velocity.read, velocity.write);
     velocity.swap();
   }
 
-  externalTemp.compute(renderer, temperature.read, 0.01, temperature.write);
+  externalTemperature.compute(renderer, temperature.read, 0.01, temperature.write);
   temperature.swap();
-
-  //externalTemperature.compute(renderer, temperature.read, temperature.write);
-  //temperature.swap();
 
   curl.compute(renderer, velocity.read, vorticity.write);
   vorticity.swap();
