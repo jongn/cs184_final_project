@@ -25,6 +25,7 @@ var externalDensity;
 var subtractGradient;
 var vorticity;
 var draw;
+var boundary;
 
 var displaySettings = {
     Slab: "Density"
@@ -52,6 +53,7 @@ var tempFolder = gui.addFolder("Temperature");
 var vorticitySettings = {
     Curl: 0.2
 };
+
 var vorticityFolder = gui.addFolder("Vorticity");
     vorticityFolder.add(vorticitySettings, "Curl", 0, 1.0, 0.05);
 
@@ -62,6 +64,11 @@ gui.add(colorSettings, "Color", [
     "Constant",
     "Velocity-Based"
 ]);
+
+var boundarySettings = {
+    Boundaries: false
+};
+gui.add(boundarySettings, "Boundaries");
 
 function scene_setup(){
     scene = new THREE.Scene();
@@ -106,6 +113,7 @@ function buffer_texture_setup(){
     subtractGradient = new SubtractGradient();
     curl = new Curl();
     vorticityConf = new VorticityConf();
+    boundary = new Boundary();
 
     // create slabs
 
@@ -181,17 +189,37 @@ function render() {
   advect.compute(renderer, velocity.read, velocity.read, 1.0, velocity.write);
   velocity.swap();
 
+  if (boundarySettings.Boundaries) {
+    boundary.velocity();
+    boundary.compute(renderer, velocity.read, velocity.write);
+    velocity.swap();
+  }
+
   advect.compute(renderer, velocity.read, density.read, 0.98, density.write);
   density.swap();
+
+  if (boundarySettings.Boundaries) {
+    boundary.density();
+    boundary.compute(renderer, density.read, density.write);
+    density.swap();
+  }
 
   advect.compute(renderer, velocity.read, temperature.read, 0.98, temperature.write);
   temperature.swap();
 
+
+
   buoyancy.compute(renderer, velocity.read, temperature.read, density.read, tempSettings.Ambient, velocity.write);
   velocity.swap();
 
+  //boundary.compute(renderer, velocity.read, velocity.write);
+  //velocity.swap();
+
   externalVelocity.compute(renderer, velocity.read, velocity.write);
   velocity.swap();
+
+  //boundary.compute(renderer, velocity.read, velocity.write);
+  //velocity.swap();
 
   let currColor = colorSettings.Color;
 
@@ -203,6 +231,12 @@ function render() {
   }
   density.swap();
 
+  if (boundarySettings.Boundaries) {
+    boundary.density();
+    boundary.compute(renderer, density.read, density.write);
+    density.swap();
+  }
+
   //externalForce.compute(renderer, temperature.read, temperature.write);
   //temperature.swap();
 
@@ -211,6 +245,9 @@ function render() {
 
   vorticityConf.compute(renderer, velocity.read, vorticity.read, vorticitySettings.Curl, velocity.write);
   velocity.swap();
+
+  //boundary.compute(renderer, velocity.read, velocity.write);
+  //velocity.swap();
 
   divergence.compute(renderer, velocity.read, 1.0, 1.0, diverge.write);
   diverge.swap();
@@ -224,9 +261,18 @@ function render() {
   subtractGradient.compute(renderer, velocity.read, pressure.read, 1.0, 1.0, velocity.write);
   velocity.swap()
 
+  //boundary.compute(renderer, velocity.read, velocity.write);
+  //velocity.swap();
+
   // curl.compute(renderer, velocity.read, velocity.write);
   // vorticity.compute(renderer, velocity.read, curl.read, dt, velocity.write);
   // velocity.swap()
+
+  if (boundarySettings.Boundaries) {
+    boundary.velocity();
+    boundary.compute(renderer, velocity.read, velocity.write);
+    velocity.swap();
+  }
 
   var read;
   let currSlab = displaySettings.Slab;
@@ -257,7 +303,7 @@ function render() {
   // use for debugging
   /*
   var pixel = new Uint8Array(4);
-  gl.readPixels(50, 50, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+  gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
   console.log(pixel);
   */
 

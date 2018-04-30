@@ -204,6 +204,31 @@
             gl_FragColor = vec4(velocity + weight * force, 0.0, 1.0);
         }
     </script>
+    <script id="Boundary" type="shader-code">
+        uniform vec2 res;
+        uniform sampler2D read;
+        uniform float scale;
+        uniform vec2 xloffset;
+        uniform vec2 xroffset;
+        uniform vec2 yboffset;
+        uniform vec2 ytoffset;
+
+        void main() {
+            if (gl_FragCoord.x <= 1.5){
+                gl_FragColor = vec4(scale * texture2D(read, (gl_FragCoord.xy + xloffset) / res.xy).xy, 0.0, 1.0);
+            } else if (gl_FragCoord.x >= (res.x - 1.5)) {
+                gl_FragColor = vec4(scale * texture2D(read, (gl_FragCoord.xy + xroffset) / res.xy).xy, 0.0, 1.0);
+            } else if (gl_FragCoord.y <= 1.5) {
+                gl_FragColor = vec4(scale * texture2D(read, (gl_FragCoord.xy + yboffset) / res.xy).xy, 0.0, 1.0);
+            } else if (gl_FragCoord.y >= (res.y - 1.5)) {
+                gl_FragColor = vec4(scale * texture2D(read, (gl_FragCoord.xy + ytoffset) / res.xy).xy, 0.0, 1.0);
+            }else {
+                gl_FragColor = vec4(texture2D(read, gl_FragCoord.xy / res.xy).xyz, 1.0);
+
+            }
+            
+        }
+    </script>
     <script src="js/Slab.js"></script>
     <script src="js/Advect.js"></script>
     <script src="js/ExternalVelocity.js"></script>
@@ -215,6 +240,7 @@
     <script src="js/SubtractGradient.js"></script>
     <script src="js/VorticityConf.js"></script>
     <script src="js/Curl.js"></script>
+    <script src="js/Boundary.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>
