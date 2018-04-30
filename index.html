@@ -113,6 +113,8 @@
             vec2 ij = gl_FragCoord.xy / res.xy;
 
             gl_FragColor = vec4( (texture2D(x, ij - istep).x + texture2D(x, ij + istep).x + texture2D(x, ij + jstep).x + texture2D(x, ij - jstep).x + alpha * texture2D(b, ij).x) / beta, 0.0, 0.0, 1.0);
+
+
         }
     </script>
     <script id="Divergence" type="shader-code">
@@ -130,6 +132,7 @@
             float vterm = (texture2D(u, ij + jstep).y - texture2D(u, ij - jstep).y) / (2.0 * dy);
 
             gl_FragColor = vec4(uterm + vterm, 0.0, 0.0, 1.0);
+
         }
     </script>
     <script id="SubtractGradient" type="shader-code">
@@ -147,6 +150,7 @@
             vec2 gradient = vec2((texture2D(p, ij + istep).x - texture2D(p, ij - istep).x) / (2.0 * dx), (texture2D(p, ij + jstep).x - texture2D(p, ij - jstep).x) / (2.0 * dy));
 
             gl_FragColor = vec4(texture2D(w, ij).xy - gradient, 0.0, 1.0);
+
         }
     </script>
     <script id="Buoyancy" type="shader-code">
@@ -169,6 +173,8 @@
                 float d = texture2D(densityField, pixel).x;
                 gl_FragColor += vec4(0.0, sigma * (t - ambientTemperature) - d * kappa, 0.0, 1.0);
             //}
+
+
         }
     </script>
     <script id="Curl" type="shader-code">
@@ -186,6 +192,8 @@
             float dudy = (texture2D(velocityField, ij + jstep).x - texture2D(velocityField, ij - jstep).x) / (2.0 * dy);
 
             gl_FragColor = vec4(dvdx - dudy, 0.0, 0.0, 1.0);
+
+
         }
     </script>
     <script id="VorticityConf" type="shader-code">
@@ -219,8 +227,8 @@
 
 
             if (boundary > 0.1) {
-                if (gl_FragCoord.x <= 2.5 || gl_FragCoord.x >= (res.x - 2.5) || gl_FragCoord.y <= 2.5 || gl_FragCoord.y >= (res.y - 2.5)){
-                    gl_FragColor = vec4(texture2D(curlField, gl_FragCoord.xy / res.xy).xy, 0.0, 1.0);
+                if (gl_FragCoord.x <= 1.5 || gl_FragCoord.x >= (res.x - 1.5) || gl_FragCoord.y <= 1.5 || gl_FragCoord.y >= (res.y - 1.5)){
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
                 }
             }
         }

@@ -202,12 +202,9 @@ document.onmousedown = function(event){
     lastY = window.innerHeight - event.clientY;
     externalVelocity.smokeSource.z = 1.0;
     externalDensity.smokeSource.z = 1.0;
-<<<<<<< HEAD
-    externalTemp.smokeSource.z = 0.2;
-    externalTemperature.smokeSource.z = 0.2;
-=======
+    //externalTemp.smokeSource.z = 1.0;
+
     externalTemperature.smokeSource.z = 1.0;
->>>>>>> 70a2ca7e3bda9ecc5182ff5fc69f6721fec9132a
     color = [Math.cos(timeStamp)* 150, Math.cos(timeStamp) * Math.sin(timeStamp) * 200, 0];
 
 }

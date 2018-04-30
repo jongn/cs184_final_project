@@ -28,5 +28,6 @@ SubtractGradient.prototype.compute = function(renderer, w, p, dx, dy, output) {
     this.uniforms.p.value = p;
     this.uniforms.dx.value = dx;
     this.uniforms.dy.value = dy;
+
     renderer.render(this.scene, this.camera, output, false);
 }
