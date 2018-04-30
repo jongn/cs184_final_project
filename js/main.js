@@ -28,6 +28,8 @@ var vorticity;
 var splat;
 var draw;
 
+var color = [0,0,0];
+
 var displaySettings = {
     Slab: "Density"
 };
@@ -62,6 +64,7 @@ var colorSettings = {
 };
 gui.add(colorSettings, "Color", [
     "Constant",
+    "Cos-Function",
     "Velocity-Based"
 ]);
 
@@ -157,8 +160,6 @@ function UpdateMousePosition(X,Y){
     externalVelocity.sourceVelocity.x = Math.round((X-lastX) / deltaTime * 100);
     externalVelocity.sourceVelocity.y = Math.round((Y-lastY) / deltaTime * 100);
 
-
-
     timeStamp = currentTime;
     lastX = X;
     lastY = Y;
@@ -175,6 +176,8 @@ document.onmousedown = function(event){
     externalVelocity.smokeSource.z = 1.0;
     externalDensity.smokeSource.z = 1.0;
     externalTemperature.smokeSource.z = 0.2;
+    color = [Math.cos(timeStamp)* 150, Math.cos(timeStamp) * Math.sin(timeStamp) * 200, 0];
+
 }
 document.onmouseup = function(event){
     mouseDown = false;
@@ -214,7 +217,9 @@ function render() {
   let currColor = colorSettings.Color;
 
   if (currColor == "Constant") {
-      color = [50, 50, 50];
+      color = [50,50,50];
+      externalDensity.compute(renderer, density.read, color, density.write);
+  } else if (currColor == "Cos-Function") {
       externalDensity.compute(renderer, density.read, color, density.write);
   } else if (currColor == "Velocity-Based") {
       externalVelocity.compute(renderer, density.read, density.write);
@@ -264,8 +269,8 @@ function render() {
   let currSlab = displaySettings.Slab;
   if (currSlab == "Density") {
       if (currColor == "Constant") {
-        draw.setDisplay(new THREE.Vector3(0,0,0), new THREE.Vector3(1.0,0.2,0.8));
-      } else if (currColor == "Velocity-Based") {
+        draw.setDisplay(new THREE.Vector3(0.0,0.0,0.0), new THREE.Vector3(1.0,0.2,0.8));
+      } else {
         draw.displayNeg();
       }
       read = density.read;
