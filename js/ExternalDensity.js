@@ -6,7 +6,8 @@ ExternalDensity = function(res) {
         bufferTexture: { type: "t" },
         res : {type: 'v2' },
         smokeSource: {type:"v3" },
-        color: {type:"v3" }
+        color: {type:"v3" },
+        radius: {type: 'f'}
     };
     var material = new THREE.ShaderMaterial({
         uniforms: this.uniforms,
@@ -22,10 +23,11 @@ ExternalDensity = function(res) {
     this.scene.add(this.quad);
 }
 
-ExternalDensity.prototype.compute = function(renderer, input, color, output) {
+ExternalDensity.prototype.compute = function(renderer, input, color, radius, output) {
     this.uniforms.bufferTexture.value = input;
     this.uniforms.res.value = this.res;
     this.uniforms.smokeSource.value = this.smokeSource;
     this.uniforms.color.value = new THREE.Vector3(color[0],color[1],color[2]);
+    this.uniforms.radius.value = radius;
     renderer.render(this.scene, this.camera, output, false);
 }

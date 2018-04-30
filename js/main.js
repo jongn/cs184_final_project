@@ -76,6 +76,12 @@ gui.add(colorSettings, "Color", [
     "Velocity-Based"
 ]);
 
+var radiusSettings = {
+    Radius: 8.0
+};
+
+gui.add(radiusSettings, "Radius", 5.0, 20.0, 1.0);
+
 var boundarySettings = {
     Boundaries: false
 };
@@ -266,7 +272,7 @@ function render() {
   //boundary.compute(renderer, velocity.read, velocity.write);
   //velocity.swap();
 
-  externalVelocity.compute(renderer, velocity.read, velocity.write);
+  externalVelocity.compute(renderer, velocity.read, radiusSettings.Radius, velocity.write);
   velocity.swap();
 
   //boundary.compute(renderer, velocity.read, velocity.write);
@@ -276,11 +282,11 @@ function render() {
 
   if (currColor == "Constant") {
       color = [50,50,50];
-      externalDensity.compute(renderer, density.read, color, density.write);
+      externalDensity.compute(renderer, density.read, color, radiusSettings.Radius, density.write);
   } else if (currColor == "Cos-Function") {
-      externalDensity.compute(renderer, density.read, color, density.write);
+      externalDensity.compute(renderer, density.read, color, radiusSettings.Radius, density.write);
   } else if (currColor == "Velocity-Based") {
-      externalVelocity.compute(renderer, density.read, density.write);
+      externalVelocity.compute(renderer, density.read, radiusSettings.Radius, density.write);
   }
   density.swap();
 
@@ -292,7 +298,7 @@ function render() {
     velocity.swap();
   }
 
-  externalTemperature.compute(renderer, temperature.read, 0.01, temperature.write);
+  externalTemperature.compute(renderer, temperature.read, 0.01, radiusSettings.Radius, temperature.write);
   temperature.swap();
 
   curl.compute(renderer, velocity.read, vorticity.write);

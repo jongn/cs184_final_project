@@ -7,7 +7,8 @@ ExternalVelocity = function(res) {
         bufferTexture: { type: "t" },
         res : {type: 'v2' },
         smokeSource: {type:"v3" },
-        sourceVelocity: {type:"v2" }
+        sourceVelocity: {type:"v2" },
+        radius: {type: 'f'}
     };
     var material = new THREE.ShaderMaterial({
         uniforms: this.uniforms,
@@ -23,10 +24,11 @@ ExternalVelocity = function(res) {
     this.scene.add(this.quad);
 }
 
-ExternalVelocity.prototype.compute = function(renderer, input, output) {
+ExternalVelocity.prototype.compute = function(renderer, input, radius, output) {
     this.uniforms.bufferTexture.value = input;
     this.uniforms.res.value = this.res;
     this.uniforms.smokeSource.value = this.smokeSource;
     this.uniforms.sourceVelocity.value = this.sourceVelocity;
+    this.uniforms.radius.value = radius;
     renderer.render(this.scene, this.camera, output, false);
 }
