@@ -174,7 +174,7 @@ document.onmousedown = function(event){
     lastY = window.innerHeight - event.clientY;
     externalVelocity.smokeSource.z = 1.0;
     externalDensity.smokeSource.z = 1.0;
-    externalTemperature.smokeSource.z = 1.0;
+    externalTemperature.smokeSource.z = 0.2;
 }
 document.onmouseup = function(event){
     mouseDown = false;
@@ -230,7 +230,7 @@ function render() {
   advect.compute(renderer, velocity.read, temperature.read, 0.98, 0.5, temperature.write);
   temperature.swap();
 
-  buoyancy.compute(renderer, velocity.read, temperature.read, density.read, tempSettings.Ambient, velocity.write);
+  buoyancy.compute(renderer, velocity.read, temperature.read, density.read, 0.5 * tempSettings.Ambient, velocity.write);
   velocity.swap();
 
   
@@ -273,7 +273,8 @@ function render() {
       draw.displayNeg();
       read = velocity.read;
   } else if (currSlab == "Temperature") {
-      draw.displayNeg();
+      amb = 0.5 * tempSettings.Ambient
+      draw.setDisplay(new THREE.Vector3(0.5 + amb,0.5,0.5 - amb), new THREE.Vector3(1.0,1.0,1.0));
       read = temperature.read;
   } else if (currSlab == "Vorticity") {
       read = vorticity.read;
