@@ -197,7 +197,7 @@ document.onmousedown = function(event){
     lastY = window.innerHeight - event.clientY;
     externalVelocity.smokeSource.z = 1.0;
     externalDensity.smokeSource.z = 1.0;
-    externalTemp.smokeSource.z = 1.0;
+    externalTemp.smokeSource.z = 0.2;
     externalTemperature.smokeSource.z = 0.2;
     color = [Math.cos(timeStamp)* 150, Math.cos(timeStamp) * Math.sin(timeStamp) * 200, 0];
 
@@ -258,9 +258,10 @@ function render() {
   velocity.swap();
 
   if (boundarySettings.Boundaries) {
-    boundary.velocity();
+    boundary.density();
     boundary.compute(renderer, density.read, density.write);
     density.swap();
+    boundary.velocity();
     boundary.compute(renderer, velocity.read, velocity.write);
     velocity.swap();
   }
@@ -288,23 +289,28 @@ function render() {
   density.swap();
 
   if (boundarySettings.Boundaries) {
-    boundary.velocity();
+    boundary.density();
     boundary.compute(renderer, density.read, density.write);
     density.swap();
+    boundary.velocity();
     boundary.compute(renderer, velocity.read, velocity.write);
     velocity.swap();
   }
 
-  externalTemp.compute(renderer, temperature.read, 0.01, temperature.write);
-  temperature.swap();
-
-  //externalTemperature.compute(renderer, temperature.read, temperature.write);
+  //externalTemp.compute(renderer, temperature.read, 0.01, temperature.write);
   //temperature.swap();
+
+  externalTemperature.compute(renderer, temperature.read, temperature.write);
+  temperature.swap();
 
   curl.compute(renderer, velocity.read, vorticity.write);
   vorticity.swap();
 
-  vorticityConf.compute(renderer, velocity.read, vorticity.read, vorticitySettings.Curl, velocity.write);
+  if (boundarySettings.Boundary) {
+    vorticityConf.compute(renderer, velocity.read, vorticity.read, vorticitySettings.Curl, 1.0, velocity.write);
+  } else {
+    vorticityConf.compute(renderer, velocity.read, vorticity.read, vorticitySettings.Curl, 0.0, velocity.write);
+  }
   velocity.swap();
 
   //boundary.compute(renderer, velocity.read, velocity.write);

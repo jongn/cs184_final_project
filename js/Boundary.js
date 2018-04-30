@@ -1,10 +1,11 @@
 Boundary = function() {
-    var geometry = new THREE.PlaneBufferGeometry( 2 * (512 - 2) / 512, 2 * (256 - 2) / 256 );
+    var geometry = new THREE.PlaneBufferGeometry( 2 * (512 - 0) / 512, 2 * (256 - 0) / 256 );
     this.xloffset = new THREE.Vector2(0.0, 0.0);
     this.xroffset = new THREE.Vector2(0.0, 0.0);
     this.yboffset = new THREE.Vector2(0.0, 0.0);
     this.ytoffset = new THREE.Vector2(0.0, 0.0);
     this.scaling = 0.0;
+    this.dense = 1.0;
     this.res = new THREE.Vector2(512, 256);
     this.uniforms = {
         read: { type: "t" },
@@ -13,7 +14,8 @@ Boundary = function() {
         xloffset: {type: "v2"},
         xroffset: {type: "v2"},
         yboffset: {type: "v2"},
-        ytoffset: {type: "v2"}
+        ytoffset: {type: "v2"},
+        density: {type: "f"}
     };
     var material = new THREE.ShaderMaterial({
         uniforms: this.uniforms,
@@ -41,6 +43,7 @@ Boundary.prototype = {
         this.uniforms.xroffset.value = this.xroffset;
         this.uniforms.yboffset.value = this.yboffset;
         this.uniforms.ytoffset.value = this.ytoffset;
+        this.uniforms.density.value = this.dense;
         renderer.render(this.scene, this.camera, output, false);
     },
 
@@ -49,7 +52,8 @@ Boundary.prototype = {
         this.xroffset.set(0.0, 0.0);
         this.yboffset.set(0.0, 0.0);
         this.ytoffset.set(0.0, 0.0);
-        this.scaling = 0.0;
+        this.scaling = 1.0;
+        this.dense = 1.0;
     },
 
     velocity: function() {
@@ -58,6 +62,7 @@ Boundary.prototype = {
         this.yboffset.set(0.0, 1.0);
         this.ytoffset.set(0.0, -1.0);
         this.scaling = -1.0;
+        this.dense = 0.0;
     },
 
     pressure: function() {
@@ -66,5 +71,6 @@ Boundary.prototype = {
         this.yboffset.set(0.0, 1.0);
         this.ytoffset.set(0.0, -1.0);
         this.scaling = 1.0;
+        this.dense = 0.0;
     }
 }

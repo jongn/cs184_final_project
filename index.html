@@ -207,6 +207,7 @@
         uniform float dx;
         uniform float dy;
         uniform float weight;
+        uniform float boundary;
 
         void main() {
             vec2 istep = vec2(1.0 / res.x, 0.0);
@@ -220,14 +221,18 @@
 
                 vec2 psi = vec2(etaX / abs(etaX), etaY / abs(etaY));
                 vec2 vorticity = texture2D(curlField, ij).xy;
-
-
-
                 vec2 cross = vec2(psi.y * vorticity.x, psi.x * vorticity.y * -1.0);
                 force = cross * dt;
             }
             vec2 velocity = texture2D(velocityField, ij).xy;
             gl_FragColor = vec4(velocity + weight * force, 0.0, 1.0);
+
+
+            if (boundary > 0.1) {
+                if (gl_FragCoord.x <= 2.5 || gl_FragCoord.x >= (res.x - 2.5) || gl_FragCoord.y <= 2.5 || gl_FragCoord.y >= (res.y - 2.5)){
+                    gl_FragColor = vec4(texture2D(curlField, gl_FragCoord.xy / res.xy).xy, 0.0, 1.0);
+                }
+            }
         }
     </script>
     <script id="Boundary" type="shader-code">
@@ -239,18 +244,33 @@
         uniform vec2 yboffset;
         uniform vec2 ytoffset;
 
+        uniform float density;
+
         void main() {
             if (gl_FragCoord.x <= 1.5){
                 gl_FragColor = vec4(scale * texture2D(read, (gl_FragCoord.xy + xloffset) / res.xy).xy, 0.0, 1.0);
+                if (density > 0.1) {
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+                }
             } else if (gl_FragCoord.x >= (res.x - 1.5)) {
                 gl_FragColor = vec4(scale * texture2D(read, (gl_FragCoord.xy + xroffset) / res.xy).xy, 0.0, 1.0);
+                if (density > 0.1) {
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+                }
             } else if (gl_FragCoord.y <= 1.5) {
                 gl_FragColor = vec4(scale * texture2D(read, (gl_FragCoord.xy + yboffset) / res.xy).xy, 0.0, 1.0);
+                if (density > 0.1) {
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+                }
             } else if (gl_FragCoord.y >= (res.y - 1.5)) {
                 gl_FragColor = vec4(scale * texture2D(read, (gl_FragCoord.xy + ytoffset) / res.xy).xy, 0.0, 1.0);
+                if (density > 0.1) {
+                    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+                }
             } else {
                 gl_FragColor = vec4(texture2D(read, gl_FragCoord.xy / res.xy).xyz, 1.0);
             }
+
         }
             
     </script>

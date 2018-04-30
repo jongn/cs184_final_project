@@ -9,7 +9,8 @@ VorticityConf = function() {
         eps: { type: "f" },
         dx: { type: "f" },
         dy: { type: "f" },
-        weight: { type: "f" }
+        weight: { type: "f" },
+        boundary: { type: "f"}
     };
     var material = new THREE.ShaderMaterial({
         uniforms: this.uniforms,
@@ -25,18 +26,19 @@ VorticityConf = function() {
     this.scene.add(this.quad);
 }
 
-VorticityConf.prototype.compute = function(renderer, velocityField, curlField, weight, output) {
+VorticityConf.prototype.compute = function(renderer, velocityField, curlField, weight, bound, output) {
     this.uniforms.res.value = this.res;
     this.uniforms.velocityField.value = velocityField;
     this.uniforms.curlField.value = curlField;
 
-    this.uniforms.eps.value = 0.000001;
+    this.uniforms.eps.value = 0.01;
 
     this.uniforms.dt.value = 1.0;
 
     this.uniforms.dx.value = 1.0;
     this.uniforms.dy.value = 1.0;
     this.uniforms.weight.value = weight;
+    this.uniforms.boundary.value = bound;
 
     renderer.render(this.scene, this.camera, output, false);
 }
