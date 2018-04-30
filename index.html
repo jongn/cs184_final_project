@@ -16,6 +16,7 @@
         uniform sampler2D velocityField;//Our input texture
         uniform sampler2D advectionField;
         uniform float dissipation;
+        uniform float upwardTemp;
 
         vec2 bilerp(sampler2D texture, vec2 p)
         {
@@ -42,7 +43,7 @@
 
         void main() {
             vec2 pixel = gl_FragCoord.xy / res.xy;
-            vec2 p = gl_FragCoord.xy - texture2D(velocityField, pixel).xy;
+            vec2 p = gl_FragCoord.xy - texture2D(velocityField, pixel).xy - vec2(0.0, upwardTemp);
             gl_FragColor = vec4(dissipation * bilerp(advectionField, p), 0.0, 1.0);
         }
     </script>
@@ -56,6 +57,18 @@
             vec2 pixel = gl_FragCoord.xy / res.xy;
             float dist = distance(smokeSource.xy,gl_FragCoord.xy);
             vec2 smoke = smokeSource.z * max(8.0-dist,0.0) * sourceVelocity / res.xy;
+            gl_FragColor = vec4(texture2D(bufferTexture, pixel).xy + smoke, 0.0, 1.0);
+        }
+    </script>
+    <script id="ExternalTemperature" type="shader-code">
+        uniform vec2 res;//The width and height of our screen
+        uniform sampler2D bufferTexture;//Our input texture
+        uniform vec3 smokeSource;//The x,y are the posiiton. The z is the power/density
+
+        void main() {
+            vec2 pixel = gl_FragCoord.xy / res.xy;
+            float dist = distance(smokeSource.xy,gl_FragCoord.xy);
+            vec2 smoke = smokeSource.z * max(8.0-dist,0.0) * vec2(0.0, 10.0) / res.xy;
             gl_FragColor = vec4(texture2D(bufferTexture, pixel).xy + smoke, 0.0, 1.0);
         }
     </script>
@@ -204,10 +217,34 @@
             gl_FragColor = vec4(velocity + weight * force, 0.0, 1.0);
         }
     </script>
+    <script id="Splat" type="shader-code">
+        uniform vec2 res;
+        uniform sampler2D field;
+        uniform vec2 point;
+        uniform vec3 color;
+        uniform float radius;
+
+        float gauss(vec2 p, float r) {
+            return exp(-dot(p, p) / r);
+        }
+
+        void main () {
+            vec2 pixel = gl_FragCoord.xy / res.xy;
+            vec3 base = texture2D(field, pixel).xyz;
+            vec2 dist = point.xy - gl_FragCoord.xy;
+            if (dist < radius) {
+                vec3 splat = color * gauss(dist, res.x * radius);
+                gl_FragColor = vec4(base + splat, 1.0);
+            } else {
+                gl_FragColor = vec4(0.0);
+            }
+        }
+    </script>
     <script src="js/Slab.js"></script>
     <script src="js/Advect.js"></script>
     <script src="js/ExternalVelocity.js"></script>
     <script src="js/ExternalDensity.js"></script>
+    <script src="js/ExternalTemperature.js"></script>
     <script src="js/Draw.js"></script>
     <script src="js/Buoyancy.js"></script>
     <script src="js/Jacobi.js"></script>
@@ -215,6 +252,7 @@
     <script src="js/SubtractGradient.js"></script>
     <script src="js/VorticityConf.js"></script>
     <script src="js/Curl.js"></script>
+    <script src="js/Splat.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>

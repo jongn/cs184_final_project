@@ -1,16 +1,16 @@
-Advect = function() {
+Splat = function() {
     var geometry = new THREE.PlaneBufferGeometry( 2 * (512 - 2) / 512, 2 * (256 - 2) / 256 );
     this.res = new THREE.Vector2(512, 256);
     this.uniforms = {
         res : {type: 'v2' },
-        velocityField: { type: "t" },
-        advectionField: { type: "t" },
-        dissipation: {type:"f" },
-        upwardTemp : { type : "f" }
+        field: { type: 't' },
+        point : { type: 'v2'},
+        color : { type: 'v3'},
+        radius : { type: 'f'}
     };
     var material = new THREE.ShaderMaterial({
         uniforms: this.uniforms,
-        fragmentShader: document.getElementById( 'Advect' ).innerHTML,
+        fragmentShader: document.getElementById( 'Splat' ).innerHTML,
         depthWrite: false,
         depthTest: false,
         blending: THREE.NoBlending
@@ -22,11 +22,11 @@ Advect = function() {
     this.scene.add(this.quad);
 }
 
-Advect.prototype.compute = function(renderer, velocityField, advectionField, dissipation, upwardTemp, output) {
+Splat.prototype.compute = function(renderer, field, point, color, radius, output) {
     this.uniforms.res.value = this.res;
-    this.uniforms.velocityField.value = velocityField;
-    this.uniforms.advectionField.value = advectionField;
-    this.uniforms.dissipation.value = dissipation;
-    this.uniforms.upwardTemp.value = upwardTemp;
+    this.uniforms.field.value = field;
+    this.uniforms.point.value = point;
+    this.uniforms.color.value = color;
+    this.uniforms.radius.value = radius;
     renderer.render(this.scene, this.camera, output, false);
 }

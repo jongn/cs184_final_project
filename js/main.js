@@ -22,8 +22,10 @@ var divergence;
 var jacobi;
 var externalVelocity;
 var externalDensity;
+var externalTemperature;
 var subtractGradient;
 var vorticity;
+var splat;
 var draw;
 
 var displaySettings = {
@@ -99,6 +101,7 @@ function buffer_texture_setup(){
     advect = new Advect();
     externalVelocity = new ExternalVelocity();
     externalDensity = new ExternalDensity();
+    externalTemperature = new ExternalTemperature();
     buoyancy = new Buoyancy();
     draw = new Draw();
     jacobi = new Jacobi();
@@ -106,6 +109,7 @@ function buffer_texture_setup(){
     subtractGradient = new SubtractGradient();
     curl = new Curl();
     vorticityConf = new VorticityConf();
+    splat = new Splat();
 
     // create slabs
 
@@ -147,6 +151,8 @@ function UpdateMousePosition(X,Y){
     externalVelocity.smokeSource.y = Y * 256 / window.innerHeight;
     externalDensity.smokeSource.x = X * 512 / window.innerWidth;
     externalDensity.smokeSource.y = Y * 256 / window.innerHeight;
+    externalTemperature.smokeSource.x = X * 512 / window.innerWidth;
+    externalTemperature.smokeSource.y = Y * 256 / window.innerHeight;
 
     externalVelocity.sourceVelocity.x = Math.round((X-lastX) / deltaTime * 100);
     externalVelocity.sourceVelocity.y = Math.round((Y-lastY) / deltaTime * 100);
@@ -168,27 +174,39 @@ document.onmousedown = function(event){
     lastY = window.innerHeight - event.clientY;
     externalVelocity.smokeSource.z = 1.0;
     externalDensity.smokeSource.z = 1.0;
+    externalTemperature.smokeSource.z = 1.0;
 }
 document.onmouseup = function(event){
     mouseDown = false;
     externalVelocity.smokeSource.z = 0;
     externalDensity.smokeSource.z = 0;
+    externalTemperature.smokeSource.z = 0;
+}
+
+function multipleSplats(amount) {
+  for (let i = 0; i < amount; i++) {
+    const color = [Math.random() * 10, Math.random() * 10, Math.random() * 10];
+    const x = window.innerWidth * Math.random();
+    const y = window.innerHeight * Math.random();
+    const dx = 1000 * (Math.random() - 0.5);
+    const dy = 1000 * (Math.random() - 0.5);
+    oneSplat(x, y, dx, dy, color);
+  }
+}
+
+function oneSplat(x, y, dx, dy, color) {
+  point = [x / window.innerWidth, 1.0 - y / window.innerHeight];
+  color_v = [dx, -dy, 1.0];
+  radius = 0.005;
+  splat.compute(renderer, velocity.read, point, color_v, radius, velocity.write);
+  velocity.swap();
+  color_d = [color[0] * 0.3, color[1] * 0.3, color[2] * 0.3];
+  splat.compute(renderer, density.read, point, color_d, radius, density.write);
+  density.swap();
 }
 
 //Render everything!
 function render() {
-
-  advect.compute(renderer, velocity.read, velocity.read, 1.0, velocity.write);
-  velocity.swap();
-
-  advect.compute(renderer, velocity.read, density.read, 0.98, density.write);
-  density.swap();
-
-  advect.compute(renderer, velocity.read, temperature.read, 0.98, temperature.write);
-  temperature.swap();
-
-  buoyancy.compute(renderer, velocity.read, temperature.read, density.read, tempSettings.Ambient, velocity.write);
-  velocity.swap();
 
   externalVelocity.compute(renderer, velocity.read, velocity.write);
   velocity.swap();
@@ -203,8 +221,22 @@ function render() {
   }
   density.swap();
 
-  //externalForce.compute(renderer, temperature.read, temperature.write);
-  //temperature.swap();
+  advect.compute(renderer, velocity.read, velocity.read, 1.0, 0.0, velocity.write);
+  velocity.swap();
+
+  advect.compute(renderer, velocity.read, density.read, 0.98, 0.5, density.write);
+  density.swap();
+
+  advect.compute(renderer, velocity.read, temperature.read, 0.98, 0.5, temperature.write);
+  temperature.swap();
+
+  buoyancy.compute(renderer, velocity.read, temperature.read, density.read, tempSettings.Ambient, velocity.write);
+  velocity.swap();
+
+  
+
+  externalTemperature.compute(renderer, temperature.read, temperature.write);
+  temperature.swap();
 
   curl.compute(renderer, velocity.read, vorticity.write);
   vorticity.swap();
