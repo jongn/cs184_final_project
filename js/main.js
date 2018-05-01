@@ -58,10 +58,10 @@ var pressureFolder = gui.addFolder("Pressure");
     pressureFolder.add(pressureSettings, "Iterations", 0, 50, 1);
 
 var tempSettings = {
-    Ambient: 0.0
+    Smoke: 1.0
 };
 var tempFolder = gui.addFolder("Temperature");
-    tempFolder.add(tempSettings, "Ambient", -0.5, 0.5, 0.05);
+    tempFolder.add(tempSettings, "Smoke", -1.0, 2.0, 0.05);
 
 var vorticitySettings = {
     Curl: 0.2
@@ -222,7 +222,7 @@ document.onmousedown = function(event){
     externalDensity.smokeSource.z = 1.0;
     //externalTemp.smokeSource.z = 1.0;
 
-    externalTemperature.smokeSource.z = 1.0;
+    externalTemperature.smokeSource.z = tempSettings.Smoke;
     color = [Math.cos(timeStamp)* 150, Math.cos(timeStamp) * Math.sin(timeStamp) * 200, 0];
 
 }
@@ -281,7 +281,7 @@ function render() {
   advect.compute(renderer, obs, velocity.read, temperature.read, 0.99, temperature.write);
   temperature.swap();
 
-  buoyancy.compute(renderer, obs, velocity.read, temperature.read, density.read, 0.08 * tempSettings.Ambient, velocity.write);
+  buoyancy.compute(renderer, obs, velocity.read, temperature.read, density.read, 0.0, velocity.write);
   velocity.swap();
 
   if (boundarySettings.Boundaries) {
