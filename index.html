@@ -15,6 +15,7 @@
         uniform vec2 res;//The width and height of our screen
         uniform sampler2D velocityField;//Our input texture
         uniform sampler2D advectionField;
+        uniform sampler2D obstacle;
         uniform float dissipation;
 
         vec2 bilerp(sampler2D texture, vec2 p)
@@ -43,7 +44,11 @@
         void main() {
             vec2 pixel = gl_FragCoord.xy / res.xy;
             vec2 p = gl_FragCoord.xy - texture2D(velocityField, pixel).xy;
-            gl_FragColor = vec4(dissipation * bilerp(advectionField, p), 0.0, 1.0);
+            if (texture2D(obstacle, pixel).z > 0.0) {
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+            } else {
+                gl_FragColor = vec4(dissipation * bilerp(advectionField, p), 0.0, 1.0);
+            }
         }
     </script>
     <script id="ExternalVelocity" type="shader-code">
@@ -92,18 +97,39 @@
         precision mediump float;
         uniform vec2 res;
         uniform sampler2D bufferTexture;
+        uniform sampler2D obstacle;
         uniform vec3 bias;
         uniform vec3 scale;
+        uniform vec3 obstacleColor;
 
         void main() {
             vec2 pixel = gl_FragCoord.xy / res.xy;
-            gl_FragColor = vec4(bias + scale * texture2D(bufferTexture, pixel).xyz, 1.0);
+            if (texture2D(obstacle, pixel).z > 0.0) {
+                vec2 istep = vec2(1.0 / res.x, 0.0);
+                vec2 jstep = vec2(0.0, 1.0 / res.y);
+
+                float a = 0.124 * texture2D(obstacle, pixel - istep).z;
+                float b = 0.124 * texture2D(obstacle, pixel + istep).z;
+                float c = 0.124 * texture2D(obstacle, pixel + jstep).z;
+                float d = 0.124 * texture2D(obstacle, pixel - jstep).z;
+
+                float e = 0.075 * texture2D(obstacle, pixel - istep - jstep).z;
+                float f = 0.075 * texture2D(obstacle, pixel + istep + jstep).z;
+                float g = 0.075 * texture2D(obstacle, pixel + jstep - istep).z;
+                float h = 0.075 * texture2D(obstacle, pixel - jstep + istep).z;
+
+
+                gl_FragColor = vec4(obstacleColor * (2.04 + a + b + c + d + e + f + g + h), 1.0);
+            } else {
+                gl_FragColor = vec4(bias + scale * texture2D(bufferTexture, pixel).xyz, 1.0);
+            }
         }
     </script>
     <script id="Jacobi" type="shader-code">
         uniform vec2 res;
         uniform sampler2D x;
-        uniform sampler2D b;
+        uniform sampler2D bx;
+        uniform sampler2D obstacle;
         uniform float alpha;
         uniform float beta;
 
@@ -112,7 +138,29 @@
             vec2 jstep = vec2(0.0, 1.0 / res.y);
             vec2 ij = gl_FragCoord.xy / res.xy;
 
-            gl_FragColor = vec4( (texture2D(x, ij - istep).x + texture2D(x, ij + istep).x + texture2D(x, ij + jstep).x + texture2D(x, ij - jstep).x + alpha * texture2D(b, ij).x) / beta, 0.0, 0.0, 1.0);
+            float a = texture2D(x, ij - istep).x;
+            float b = texture2D(x, ij + istep).x;
+            float c = texture2D(x, ij + jstep).x;
+            float d = texture2D(x, ij - jstep).x;
+
+            float e = texture2D(obstacle, ij - istep).z;
+            float f = texture2D(obstacle, ij + istep).z;
+            float g = texture2D(obstacle, ij + jstep).z;
+            float h = texture2D(obstacle, ij - jstep).z;
+
+            if (e > 0.0)
+                a = texture2D(x, ij).x;
+            if (f > 0.0)
+                b = texture2D(x, ij).x;
+            if (g > 0.0)
+                c = texture2D(x, ij).x;
+            if (h > 0.0)
+                d = texture2D(x, ij).x;
+
+
+
+
+            gl_FragColor = vec4( ( a + b + c + d + alpha * texture2D(bx, ij).x ) / beta, 0.0, 0.0, 1.0);
 
 
         }
@@ -120,6 +168,7 @@
     <script id="Divergence" type="shader-code">
         uniform vec2 res;
         uniform sampler2D u;
+        uniform sampler2D obstacle;
         uniform float dx;
         uniform float dy;
 
@@ -128,8 +177,28 @@
             vec2 jstep = vec2(0.0, 1.0 / res.y);
             vec2 ij = gl_FragCoord.xy / res.xy;
 
-            float uterm = (texture2D(u, ij + istep).x - texture2D(u, ij - istep).x) / (2.0 * dx);
-            float vterm = (texture2D(u, ij + jstep).y - texture2D(u, ij - jstep).y) / (2.0 * dy);
+            float a = texture2D(u, ij + istep).x;
+            float b = texture2D(u, ij - istep).x;
+            float c = texture2D(u, ij + jstep).y;
+            float d = texture2D(u, ij - jstep).y;
+
+            float e = texture2D(obstacle, ij + istep).z;
+            float f = texture2D(obstacle, ij - istep).z;
+            float g = texture2D(obstacle, ij + jstep).z;
+            float h = texture2D(obstacle, ij - jstep).z;
+
+            if (e > 0.0)
+                a = 0.0;
+            if (f > 0.0)
+                b = 0.0;
+            if (g > 0.0)
+                c = 0.0;
+            if (h > 0.0)
+                d = 0.0;
+
+
+            float uterm = (a - b) / (2.0 * dx);
+            float vterm = (c - d) / (2.0 * dy);
 
             gl_FragColor = vec4(uterm + vterm, 0.0, 0.0, 1.0);
 
@@ -139,6 +208,7 @@
         uniform vec2 res;
         uniform sampler2D w;
         uniform sampler2D p;
+        uniform sampler2D obstacle;
         uniform float dx;
         uniform float dy;
 
@@ -147,9 +217,38 @@
             vec2 jstep = vec2(0.0, 1.0 / res.y);
             vec2 ij = gl_FragCoord.xy / res.xy;
 
+            float a = texture2D(p, ij + istep).x;
+            float b = texture2D(p, ij - istep).x;
+            float c = texture2D(p, ij + jstep).x;
+            float d = texture2D(p, ij - jstep).x;
+
+            float e = texture2D(obstacle, ij + istep).z;
+            float f = texture2D(obstacle, ij - istep).z;
+            float g = texture2D(obstacle, ij + jstep).z;
+            float h = texture2D(obstacle, ij - jstep).z;
+
+            vec2 vel = vec2(1.0);
+
+            if (e > 0.0) {
+                a = texture2D(p, ij).x;
+                vel.x = 0.0;
+            }
+            if (f > 0.0) {
+                b = texture2D(p, ij).x;
+                vel.x = 0.0;
+            }
+            if (g > 0.0) {
+                c = texture2D(p, ij).x;
+                vel.y = 0.0;
+            }
+            if (h > 0.0) {
+                d = texture2D(p, ij).x;
+                vel.y = 0.0;
+            }
+
             vec2 gradient = vec2((texture2D(p, ij + istep).x - texture2D(p, ij - istep).x) / (2.0 * dx), (texture2D(p, ij + jstep).x - texture2D(p, ij - jstep).x) / (2.0 * dy));
 
-            gl_FragColor = vec4(texture2D(w, ij).xy - gradient, 0.0, 1.0);
+            gl_FragColor = vec4((texture2D(w, ij).xy - gradient) * vel, 0.0, 1.0);
 
         }
     </script>
@@ -180,6 +279,7 @@
     <script id="Curl" type="shader-code">
         uniform vec2 res;
         uniform sampler2D velocityField;
+        uniform sampler2D obstacle;
         uniform float dx;
         uniform float dy;
 
@@ -188,8 +288,27 @@
             vec2 jstep = vec2(0.0, 1.0 / res.y);
             vec2 ij = gl_FragCoord.xy / res.xy;
 
-            float dvdx = (texture2D(velocityField, ij + istep).y - texture2D(velocityField, ij - istep).y) / (2.0 * dx);
-            float dudy = (texture2D(velocityField, ij + jstep).x - texture2D(velocityField, ij - jstep).x) / (2.0 * dy);
+            float a = texture2D(velocityField, ij + istep).y;
+            float b = texture2D(velocityField, ij - istep).y;
+            float c = texture2D(velocityField, ij + jstep).x;
+            float d = texture2D(velocityField, ij - jstep).x;
+
+            float e = texture2D(obstacle, ij + istep).z;
+            float f = texture2D(obstacle, ij - istep).z;
+            float g = texture2D(obstacle, ij + jstep).z;
+            float h = texture2D(obstacle, ij - jstep).z;
+
+            if (e > 0.0)
+                a = 0.0;
+            if (f > 0.0)
+                b = 0.0;
+            if (g > 0.0)
+                c = 0.0;
+            if (h > 0.0)
+                d = 0.0;
+
+            float dvdx = (a - b) / (2.0 * dx);
+            float dudy = (c - d) / (2.0 * dy);
 
             gl_FragColor = vec4(dvdx - dudy, 0.0, 0.0, 1.0);
 
@@ -295,6 +414,23 @@
             }
         }
     </script>
+    <script id="Blank" type="shader-code">
+        uniform vec3 color;
+
+        void main() {
+            gl_FragColor = vec4(color, 1.0);
+        }
+            
+    </script>
+    <script id="Dummy" type="shader-code">
+        uniform vec2 res;
+        uniform sampler2D read;
+
+        void main() {
+            gl_FragColor = vec4(texture2D(read, gl_FragCoord.xy / res.xy).xy, 0.0, 1.0);
+        }
+            
+    </script>
     <script src="js/Slab.js"></script>
     <script src="js/Advect.js"></script>
     <script src="js/ExternalVelocity.js"></script>
@@ -309,6 +445,7 @@
     <script src="js/Curl.js"></script>
     <script src="js/Boundary.js"></script>
     <script src="js/Splat.js"></script>
+    <script src="js/Obstacle.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>

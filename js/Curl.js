@@ -4,6 +4,7 @@ Curl = function(res) {
     this.uniforms = {
         res : {type: 'v2' },
         velocityField: { type: "t" },
+        obstacle: { type: "t" },
         dx: { type: "f" },
         dy: { type: "f" }    
     };
@@ -21,9 +22,10 @@ Curl = function(res) {
     this.scene.add(this.quad);
 }
 
-Curl.prototype.compute = function(renderer, velocityField, output) {
+Curl.prototype.compute = function(renderer, obstacle, velocityField, output) {
     this.uniforms.res.value = this.res;
     this.uniforms.velocityField.value = velocityField;
+    this.uniforms.obstacle.value = obstacle;
     this.uniforms.dx.value = 1.0;
     this.uniforms.dy.value = 1.0;
 

@@ -5,6 +5,7 @@ Advect = function(res) {
         res : {type: 'v2' },
         velocityField: { type: "t" },
         advectionField: { type: "t" },
+        obstacle: { type: "t" },
         dissipation: {type:"f" }
     };
     var material = new THREE.ShaderMaterial({
@@ -21,10 +22,11 @@ Advect = function(res) {
     this.scene.add(this.quad);
 }
 
-Advect.prototype.compute = function(renderer, velocityField, advectionField, dissipation, output) {
+Advect.prototype.compute = function(renderer, obstacle, velocityField, advectionField, dissipation, output) {
     this.uniforms.res.value = this.res;
     this.uniforms.velocityField.value = velocityField;
     this.uniforms.advectionField.value = advectionField;
+    this.uniforms.obstacle.value = obstacle;
     this.uniforms.dissipation.value = dissipation;
     renderer.render(this.scene, this.camera, output, false);
 }

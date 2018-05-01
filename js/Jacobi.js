@@ -4,7 +4,8 @@ Jacobi = function(res) {
     this.uniforms = {
         res : {type: 'v2' },
         x: { type: "t" },
-        b: { type: "t" },
+        bx: { type: "t" },
+        obstacle: { type: "t" },
         alpha: {type:"f" },
         beta: {type:"f" }
     };
@@ -22,10 +23,11 @@ Jacobi = function(res) {
     this.scene.add(this.quad);
 }
 
-Jacobi.prototype.compute = function(renderer, x, b, alpha, beta, output) {
+Jacobi.prototype.compute = function(renderer, obstacle, x, b, alpha, beta, output) {
     this.uniforms.res.value = this.res;
     this.uniforms.x.value = x;
-    this.uniforms.b.value = b;
+    this.uniforms.bx.value = b;
+    this.uniforms.obstacle.value = obstacle;
     this.uniforms.alpha.value = alpha;
     this.uniforms.beta.value = beta;
     renderer.render(this.scene, this.camera, output, false);

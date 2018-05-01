@@ -5,6 +5,7 @@ SubtractGradient = function(res) {
         res : {type: 'v2' },
         w: { type: "t" },
         p: { type: "t" },
+        obstacle: { type: "t" },
         dx: {type:"f" },
         dy: {type:"f" }
     };
@@ -22,10 +23,11 @@ SubtractGradient = function(res) {
     this.scene.add(this.quad);
 }
 
-SubtractGradient.prototype.compute = function(renderer, w, p, dx, dy, output) {
+SubtractGradient.prototype.compute = function(renderer, obstacle, w, p, dx, dy, output) {
     this.uniforms.res.value = this.res;
     this.uniforms.w.value = w;
     this.uniforms.p.value = p;
+    this.uniforms.obstacle.value = obstacle;
     this.uniforms.dx.value = dx;
     this.uniforms.dy.value = dy;
 

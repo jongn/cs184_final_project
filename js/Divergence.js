@@ -4,6 +4,7 @@ Divergence = function(res) {
     this.uniforms = {
         res : {type: 'v2' },
         u: { type: "t" },
+        obstacle: { type: "t" },
         dx: {type:"f" },
         dy: {type:"f" }
     };
@@ -21,9 +22,10 @@ Divergence = function(res) {
     this.scene.add(this.quad);
 }
 
-Divergence.prototype.compute = function(renderer, u, dx, dy, output) {
+Divergence.prototype.compute = function(renderer, obstacle, u, dx, dy, output) {
     this.uniforms.res.value = this.res;
     this.uniforms.u.value = u;
+    this.uniforms.obstacle.value = obstacle;
     this.uniforms.dx.value = dx;
     this.uniforms.dy.value = dy;
     renderer.render(this.scene, this.camera, output, false);

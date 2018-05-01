@@ -8,7 +8,8 @@ var density;
 var pressure;
 var temperature;
 var diverge;
-
+var circleObstacle;
+var blankObstacle;
 var drawTexture;
 
 var plane;
@@ -28,6 +29,8 @@ var vorticity;
 var splat;
 var draw;
 var boundary;
+var obstacle;
+var obstacle2;
 
 var width;
 var height;
@@ -87,6 +90,11 @@ var boundarySettings = {
 };
 gui.add(boundarySettings, "Boundaries");
 
+var obstacleSettings = {
+    Obstacle: false
+};
+gui.add(obstacleSettings, "Obstacle");
+
 function scene_setup(){
     scene = new THREE.Scene();
     width = window.innerWidth;
@@ -140,6 +148,8 @@ function buffer_texture_setup(){
     vorticityConf = new VorticityConf(res);
     boundary = new Boundary(res);
     splat = new Splat(res);
+    obstacle = new Obstacle(res);
+    obstacle2 = new Obstacle(res);
 
     // create slabs
 
@@ -150,6 +160,14 @@ function buffer_texture_setup(){
     temperature = new Slab(res);
     diverge = new Slab(res);
     vorticity = new Slab(res);
+
+    circleObstacle = new Slab(res);
+    obstacle.initCircle(renderer, new THREE.Vector3(0.0,0.0,1.0), circleObstacle.write);
+    circleObstacle.swap();
+
+    blankObstacle = new Slab(res);
+    obstacle2.initCircle(renderer, new THREE.Vector3(0.0,0.0,0.0), blankObstacle.write);
+    blankObstacle.swap();
 
     //drawTexture is what is actually being drawn
 
@@ -249,14 +267,18 @@ function oneSplat(x, y, dx, dy, color) {
 
 //Render everything!
 function render() {
+  var obs = blankObstacle.read;
+  if (obstacleSettings.Obstacle) {
+    obs = circleObstacle.read;
+  }
 
-  advect.compute(renderer, velocity.read, velocity.read, 1.0, velocity.write);
+  advect.compute(renderer, obs, velocity.read, velocity.read, 1.0, velocity.write);
   velocity.swap();
 
-  advect.compute(renderer, velocity.read, density.read, 0.99, density.write);
+  advect.compute(renderer, obs, velocity.read, density.read, 0.99, density.write);
   density.swap();
 
-  advect.compute(renderer, velocity.read, temperature.read, 0.99, temperature.write);
+  advect.compute(renderer, obs, velocity.read, temperature.read, 0.99, temperature.write);
   temperature.swap();
 
   buoyancy.compute(renderer, velocity.read, temperature.read, density.read, 0.5 * tempSettings.Ambient, velocity.write);
@@ -308,7 +330,7 @@ function render() {
   externalTemperature.compute(renderer, temperature.read, 0.01, radiusSettings.Radius, temperature.write);
   temperature.swap();
 
-  curl.compute(renderer, velocity.read, vorticity.write);
+  curl.compute(renderer, obs, velocity.read, vorticity.write);
   vorticity.swap();
 
   if (boundarySettings.Boundary) {
@@ -321,12 +343,12 @@ function render() {
   //boundary.compute(renderer, velocity.read, velocity.write);
   //velocity.swap();
 
-  divergence.compute(renderer, velocity.read, 1.0, 1.0, diverge.write);
+  divergence.compute(renderer, obs, velocity.read, 1.0, 1.0, diverge.write);
   diverge.swap();
 
   renderer.clearTarget(pressure.read, true, false, false);
   for (var i = 0; i < pressureSettings.Iterations; i++) {
-    jacobi.compute(renderer, pressure.read, diverge.read, -1.0, 4.0, pressure.write);
+    jacobi.compute(renderer, obs, pressure.read, diverge.read, -1.0, 4.0, pressure.write);
     pressure.swap();
     if (boundarySettings.Boundaries) {
       boundary.pressure();
@@ -341,7 +363,8 @@ function render() {
     pressure.swap();
   }
 
-  subtractGradient.compute(renderer, velocity.read, pressure.read, 1.0, 1.0, velocity.write);
+
+  subtractGradient.compute(renderer, obs, velocity.read, pressure.read, 1.0, 1.0, velocity.write);
   velocity.swap()
 
   //boundary.compute(renderer, velocity.read, velocity.write);
@@ -384,7 +407,9 @@ function render() {
       read = diverge.read;
   }
 
-  draw.compute(renderer, read, drawTexture);
+  
+
+  draw.compute(renderer, obs, new THREE.Vector3(0.1,0.1,0.1), read, drawTexture);
 
   //var gl = renderer.getContext();
   

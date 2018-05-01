@@ -6,8 +6,10 @@ Draw = function(res) {
     this.uniforms = {
         res : {type: 'v2' },
         bufferTexture: { type: "t" },
+        obstacle: { type: "t" },
         bias: { type: "v3" },
-        scale: {type:"v3" }
+        scale: {type:"v3" },
+        obstacleColor: {type: "v3"}
     };
     var material = new THREE.ShaderMaterial({
         uniforms: this.uniforms,
@@ -23,9 +25,11 @@ Draw = function(res) {
     this.scene.add(this.quad);
 }
 
-Draw.prototype.compute = function(renderer, input, output) {
+Draw.prototype.compute = function(renderer, obstacle, obstacleColor, input, output) {
     this.uniforms.res.value = this.res;
     this.uniforms.bufferTexture.value = input;
+    this.uniforms.obstacle.value = obstacle;
+    this.uniforms.obstacleColor.value = obstacleColor;
     this.uniforms.bias.value = this.bias;
     this.uniforms.scale.value = this.scale;
     renderer.render(this.scene, this.camera, output, false);
