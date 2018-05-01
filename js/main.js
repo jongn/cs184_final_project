@@ -253,10 +253,10 @@ function render() {
   advect.compute(renderer, velocity.read, velocity.read, 1.0, velocity.write);
   velocity.swap();
 
-  advect.compute(renderer, velocity.read, density.read, 0.98, density.write);
+  advect.compute(renderer, velocity.read, density.read, 0.99, density.write);
   density.swap();
 
-  advect.compute(renderer, velocity.read, temperature.read, 0.98, temperature.write);
+  advect.compute(renderer, velocity.read, temperature.read, 0.99, temperature.write);
   temperature.swap();
 
   buoyancy.compute(renderer, velocity.read, temperature.read, density.read, 0.5 * tempSettings.Ambient, velocity.write);
