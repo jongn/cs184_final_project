@@ -328,6 +328,11 @@ function render() {
   for (var i = 0; i < pressureSettings.Iterations; i++) {
     jacobi.compute(renderer, pressure.read, diverge.read, -1.0, 4.0, pressure.write);
     pressure.swap();
+    if (boundarySettings.Boundaries) {
+      boundary.pressure();
+      boundary.compute(renderer, pressure.read, pressure.write);
+      pressure.swap();
+    }
   }
 
   if (boundarySettings.Boundaries) {
