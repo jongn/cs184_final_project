@@ -1,15 +1,16 @@
-Divergence = function(res) {
+ExternalTemp = function() {
     var geometry = new THREE.PlaneBufferGeometry( 2, 2 );
-    this.res = res;
+    this.res = new THREE.Vector2(512, 256);
+    this.smokeSource = new THREE.Vector3(0,0,0);
     this.uniforms = {
+        bufferTexture: { type: "t" },
         res : {type: 'v2' },
-        u: { type: "t" },
-        dx: {type:"f" },
-        dy: {type:"f" }
+        smokeSource: {type:"v3" },
+        temp: {type:"f" }
     };
     var material = new THREE.ShaderMaterial({
         uniforms: this.uniforms,
-        fragmentShader: document.getElementById( 'Divergence' ).innerHTML,
+        fragmentShader: document.getElementById( 'ExternalTemp' ).innerHTML,
         depthWrite: false,
         depthTest: false,
         blending: THREE.NoBlending
@@ -21,10 +22,10 @@ Divergence = function(res) {
     this.scene.add(this.quad);
 }
 
-Divergence.prototype.compute = function(renderer, u, dx, dy, output) {
+ExternalTemp.prototype.compute = function(renderer, input, temp, output) {
+    this.uniforms.bufferTexture.value = input;
     this.uniforms.res.value = this.res;
-    this.uniforms.u.value = u;
-    this.uniforms.dx.value = dx;
-    this.uniforms.dy.value = dy;
+    this.uniforms.smokeSource.value = this.smokeSource;
+    this.uniforms.temp.value = temp;
     renderer.render(this.scene, this.camera, output, false);
 }

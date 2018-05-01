@@ -1,5 +1,5 @@
 ExternalDensity = function(res) {
-    var geometry = new THREE.PlaneBufferGeometry( 2 * (512 - 2) / 512, 2 * (256 - 2) / 256 );
+    var geometry = new THREE.PlaneBufferGeometry( 2, 2 );
     this.res = res;
     this.smokeSource = new THREE.Vector3(0,0,0);
     this.uniforms = {
