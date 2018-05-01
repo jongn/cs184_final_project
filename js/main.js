@@ -281,7 +281,7 @@ function render() {
   advect.compute(renderer, obs, velocity.read, temperature.read, 0.99, temperature.write);
   temperature.swap();
 
-  buoyancy.compute(renderer, velocity.read, temperature.read, density.read, 0.5 * tempSettings.Ambient, velocity.write);
+  buoyancy.compute(renderer, obs, velocity.read, temperature.read, density.read, 0.08 * tempSettings.Ambient, velocity.write);
   velocity.swap();
 
   if (boundarySettings.Boundaries) {

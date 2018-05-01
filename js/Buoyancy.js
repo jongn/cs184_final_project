@@ -6,6 +6,7 @@ Buoyancy = function(res) {
         velocityField: { type: "t" },
         temperatureField: { type: "t" },
         densityField: { type: "t" },
+        obstacle: {type: "t"},
         ambientTemperature: { type: "f" },
         sigma: { type: "f" },
         kappa: { type: "f" }
@@ -24,11 +25,12 @@ Buoyancy = function(res) {
     this.scene.add(this.quad);
 }
 
-Buoyancy.prototype.compute = function(renderer, velocityField, temperatureField, densityField, ambientTemperature, output) {
+Buoyancy.prototype.compute = function(renderer, obstacle, velocityField, temperatureField, densityField, ambientTemperature, output) {
     this.uniforms.res.value = this.res;
     this.uniforms.velocityField.value = velocityField;
     this.uniforms.temperatureField.value = temperatureField;
     this.uniforms.densityField.value = densityField;
+    this.uniforms.obstacle.value = obstacle;
     this.uniforms.ambientTemperature.value = ambientTemperature;
     this.uniforms.sigma.value = 0.08;
     this.uniforms.kappa.value = 0.001;

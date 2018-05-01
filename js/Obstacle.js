@@ -80,7 +80,7 @@ Obstacle = function(res) {
         depthTest: false,
         blending: THREE.NoBlending
     });
-    this.blankQuad = new THREE.Mesh(geometry, material);
+    this.blankQuad = new THREE.Mesh(blank, blankMaterial);
     this.blankScene = new THREE.Scene();
     this.blankScene.add(this.blankQuad);
 }

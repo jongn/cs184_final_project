@@ -257,6 +257,7 @@
         uniform sampler2D velocityField;
         uniform sampler2D temperatureField;
         uniform sampler2D densityField;
+        uniform sampler2D obstacle;
         uniform float ambientTemperature;
         uniform float sigma;
         uniform float kappa;
@@ -267,6 +268,8 @@
             vec4 v = texture2D(velocityField, pixel);
 
             gl_FragColor = v;
+            if (texture2D(obstacle, pixel).z > 0.0)
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 
             //if (t > ambientTemperature) {
                 float d = texture2D(densityField, pixel).x;
