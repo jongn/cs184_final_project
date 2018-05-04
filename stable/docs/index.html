@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Assistant', sans-serif;
+    color: #404147;
+    background-color: #e8ecf7;
+    font-weight: lighter;
+    line-height: 22pt;
+    font-size: 12.5pt;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Fira Sans', sans-serif;
+    font-weight: lighter;
+  }
+
+  h1 {
+    color: #5a75ad;
+    font-size: 32px;
+  }
+
+  h2 {
+    color: #253968;
+    font-size: 24px;
+  }
+
+  h3 {
+    color: #5a75ad;
+    font-size: 24px;
+  }
+
+  h4 {
+    color: #1b253d;
+    font-size: 20px;
+  }
+
+</style> 
+<title>CS 184 Final Project Milestone</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Rochester" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Fira+Sans:200" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: COMPUTER GRAPHICS AND IMAGING, SPRING 2018</h1>
+<h1 align="middle">FINAL PROJECT MILESTONE: SMOKE SIMULATOR</h1>
+<h2 align="middle">Rachel Bhadra, 26354166</h2>
+<h2 align="middle">Jonathan Ngan, 25537542</h2>
+<h2 align="middle">Kenneth Tsai, 26052261</h2>
+
+<br><br>
+
+<h3 align="middle">What we have accomplished so far:</h3>
+<p>We first began by attempting to implement an OpenGL framework in C++ to run our simulation. However, we realized that this would require a decent amount of additional research, so we decided to shift gears and use Three.js and Javascript instead. While we certainly all have more experience in C++ than Javascript, the thorough documentation for Three.js and our minimal experience with it from part 5 of project 3.2 made the switch worthwhile. We were then able to create a relatively simple framework in comparison to others we had seen written in C. Additionally, using Javascript allowed us to add an interactive component to our simulation relatively painlessly, which was originally one of our stretch goals. We used the framework from <a href="https://gamedevelopment.tutsplus.com/tutorials/how-to-write-a-smoke-shader--cms-25587">this article</a> as a reference and starting point, although our final result is quite different from this one. Using Javascript and Three.js means we can run our simulation as a website and store our shaders in the HTML file, so we don’t need to use any additional software. Once we had our framework, we implemented three Javascript classes and three corresponding glsl fragment shader files. The external forces class accounts for changes the user makes in the interactive interface. The draw class, as the name suggests, draws the results to the display in real time. The advection class accounts for the transfer of velocity, density, and temperature over the Eulerian grid. The velocity component of this advection is drawn to the display. Next, we added in the projection component, implementing three more shaders (Jacobi iteration, divergence, and gradient subtraction) to allow for pressure convergence. This results in a more realistic, fluid-like simulation.
+</p>
+
+<p><a href="https://docs.google.com/presentation/d/1Rs93DUmWG5mucF-vsSOQmdt53w2qLDO1o7PFPn8pmls/edit?usp=sharing">These slides</a> provide some additional information on what we have accomplished thus far.</p> 
+
+
+<h3 align="middle">Preliminary results:</h3>
+<p>At this point, our results display the changing velocity field using an interactive interface. What we see in the interface represents the advection of velocity based on the applied external forces (how the user clicks and drags the mouse). This advection is visualized using changing colors. As the user drags the mouse, the velocity field is updated and the colors change accordingly in a fluid-like motion. We have also added density and temperature fields, but these fields are not yet represented in out visualization and are therefore not seen in our results at this time. The video below demonstrates our current visualization.</p> 
+
+<video style="display:block; margin: 0 auto; object-fit: inherit;" height=500 width=800 controls="controls" preload="none" onclick="this.paused ? this.play() : this.pause();" poster="assets/poster.png">
+ <source type="video/mp4" src="assets/demo.mp4">
+</video>
+
+<h3 align="middle">Progress relative to plan:</h3>
+<p>We have strayed from our original plan to some extent, as we are now working on an interactive simulation as opposed to a static one. However, we have completed all of the goals that we had set for ourselves for the first three weeks. We have implemented a framework and a structure for transferring data (velocity, density, temperature) using advection. We have also implemented shaders to allow for pressure convergence using Jacobi iteration. For the final week, we have switched our schedule around a bit as described below, but we are currently on track to complete our simulation in the coming week. </p>
+
+<h3 align="middle">Updated work plan:</h3>
+<p>We have done significantly more research since our initial proposal, and have adjusted our schedule accordingly. We have a working framework for Jacobi iteration, divergence, and gradient subtraction, as planned, and we are currently tackling the addition of buoyancy. This would allow us to incorporate the density and temperature fields into our visualization. As a new stretch goal, we will attempt to implement curls and vorticity as well, in order to create an even more realistic simulation. Finally, we will add in boundary conditions, as in our original work plan.
+</p>
+
+
+</body>
+</html>
